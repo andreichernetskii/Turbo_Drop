@@ -1,25 +1,27 @@
 package dispatcher.controller;
 
 import dispatcher.utils.MessageUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import dispatcher.service.UpdateProducer;
 
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import static model.RabbitQueue.*;
+
 @Component
+@RequiredArgsConstructor
 @Log4j
 public class UpdateController {
     private TelegramBot telegramBot;
     private final MessageUtils messageUtils;
-
-    public UpdateController( MessageUtils messageUtils ) {
-        this.messageUtils = messageUtils;
-    }
+    private final UpdateProducer updateProducer;
 
     public void registerBot( TelegramBot telegramBot ) {
         this.telegramBot = telegramBot;
@@ -76,19 +78,26 @@ public class UpdateController {
         setView( sendMessage );
     }
 
-    private void setView( SendMessage sendMessage ) {
-        telegramBot.sendAnswerMessage( sendMessage );
-    }
-
     private void processPhotoMessage( Update update ) {
-
+        updateProducer.produce( PHOTO_MESSAGE_UPDATE, update );
+        setFileIsReceivedView( update );
     }
 
     private void processDocMessage( Update update ) {
-
+        updateProducer.produce( DOC_MESSAGE_UPDATE, update );
     }
 
     private void processTextMessage( Update update ) {
+        updateProducer.produce( TEXT_MESSAGE_UPDATE, update );
+    }
 
+    private void setFileIsReceivedView( Update update ) {
+        SendMessage sendMessage =
+                messageUtils.generateSendMessageWithText( update, "File is being processed." );
+        setView( sendMessage );
+    }
+
+    private void setView( SendMessage sendMessage ) {
+        telegramBot.sendAnswerMessage( sendMessage );
     }
 }
