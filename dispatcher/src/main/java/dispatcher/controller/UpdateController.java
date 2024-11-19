@@ -33,7 +33,7 @@ public class UpdateController {
             return;
         }
 
-        if ( update.getMessage() != null ) {
+        if ( update.hasMessage() ) {
             distributeMessageByType( update );
         } else {
             log.error( "Unsupported message type: " + update );
@@ -57,9 +57,9 @@ public class UpdateController {
         // Map variant
         // Map message types to corresponding processing methods
         Map<Predicate<Message>, Consumer<Update>> messageProcessor = Map.of(
-                msg -> msg.getText() != null, this::processTextMessage,
-                msg -> msg.getDocument() != null, this::processDocMessage,
-                msg -> msg.getPhoto( ) != null, this::processPhotoMessage
+                Message::hasText, this::processTextMessage,
+                Message::hasDocument, this::processDocMessage,
+                Message::hasPhoto, this::processPhotoMessage
         );
 
         // Process the message by finding the first matching processor
