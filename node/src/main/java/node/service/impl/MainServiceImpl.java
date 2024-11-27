@@ -1,17 +1,19 @@
 package node.service.impl;
 
 import common_jpa.dao.AppUserDAO;
+import common_jpa.entity.AppDocument;
 import common_jpa.entity.AppUser;
 import common_jpa.entity.enums.UserState;
 import lombok.extern.log4j.Log4j;
 import node.dao.RawDataDAO;
 import node.entity.RawData;
+import node.exceptinos.UploadFileException;
+import node.service.FileService;
 import node.service.MainService;
 import node.service.ProducerService;
 import node.service.enums.ServiceCommands;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
@@ -21,13 +23,15 @@ public class MainServiceImpl implements MainService {
     private final RawDataDAO rawDataDAO;
     private final AppUserDAO appUserDAO;
     private final ProducerService producerService;
+    private final FileService fileService;
 
     public MainServiceImpl( RawDataDAO rawDataDAO,
                             ProducerService producerService,
-                            AppUserDAO appUserDAO ) {
+                            AppUserDAO appUserDAO, FileService fileService ) {
         this.rawDataDAO = rawDataDAO;
         this.producerService = producerService;
         this.appUserDAO = appUserDAO;
+        this.fileService = fileService;
     }
 
     @Override
@@ -38,11 +42,12 @@ public class MainServiceImpl implements MainService {
         UserState userState = appUser.getState();
         String text = update.getMessage().getText();
         String output = "";
+        ServiceCommands serviceCommand = ServiceCommands.fromValue( text );
 
-        if ( ServiceCommands.CANCEL.equals( text ) ) {
+        if ( ServiceCommands.CANCEL.equals( serviceCommand ) ) {
             output = cancelProcess( appUser );
         } else if ( UserState.BASIC_STATE.equals( userState ) ) {
-            output = processServiceCommand( appUser, text );
+            output = processServiceCommand( appUser, serviceCommand );
         } else if ( UserState.WAIT_FOR_EMAIL.equals( userState ) ) {
             // todo: add processing e-mails
         } else {
@@ -65,8 +70,17 @@ public class MainServiceImpl implements MainService {
             return;
         }
 
-        String answer = "Doc successfully sent!";
-        sendAnswer( answer, chatId );
+        try {
+            AppDocument document = fileService.processDoc( update.getMessage() );
+            //todo: add link for downloading the document
+            String answer = "Document successfully loaded! " +
+                    "Link for downloading: test.test";
+            sendAnswer( answer, chatId );
+        } catch ( UploadFileException exception ) {
+            log.error( exception );
+            String error = "Loading failed. Try again later.";
+            sendAnswer( error, chatId );
+        }
     }
 
     private boolean isNotAllowedToSendContent( Long chatId, AppUser appUser ) {
@@ -76,7 +90,7 @@ public class MainServiceImpl implements MainService {
             String error = "Pls register or activate your account for loading content.";
             sendAnswer( error, chatId );
             return true;
-        } else if ( !UserState.BASIC_STATE.equals( userState )) {
+        } else if ( !UserState.BASIC_STATE.equals( userState ) ) {
             String error = "Cancel current command with /cancel for sending content.";
             sendAnswer( error, chatId );
             return true;
@@ -109,7 +123,7 @@ public class MainServiceImpl implements MainService {
         producerService.producerAnswer( sendMessage );
     }
 
-    private String processServiceCommand( AppUser appUser, String cmd ) {
+    private String processServiceCommand( AppUser appUser, ServiceCommands cmd ) {
         if ( ServiceCommands.REGISTRATION.equals( cmd ) ) {
             //todo: add registration
             return "Temporary not available. Work in progress";
