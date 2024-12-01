@@ -23,8 +23,8 @@ import java.net.URL;
 @Log4j
 @Service
 public class FileServiceImpl implements FileService {
-    @Value( "${bot_token}" )
-    private String botToken;
+    @Value( "${token}" )
+    private String token;
     @Value( "${service.file_info.uri}" )
     private String fileInfoUri;
     @Value( "${service.file_storage.uri}" )
@@ -83,14 +83,14 @@ public class FileServiceImpl implements FileService {
                 HttpMethod.GET,
                 request,
                 String.class,
-                botToken,
+                token,
                 fileId
         );
     }
 
     private byte[] downloadFileInByte( String filePath ) {
-        String fullUri = filePath
-                .replace( "{token}", botToken )
+        String fullUri = fileStorageUri
+                .replace( "{token}", token )
                 .replace( "{filePath}", filePath );
 
         URL urlObj = null;
@@ -102,6 +102,8 @@ public class FileServiceImpl implements FileService {
         }
 
         //todo: refacto in case downloading big files. how to do this
+        //todo: maybe some optimisation here
+        // the all file will be saved in ram without chanks separation
         try ( InputStream inputStream = urlObj.openStream() ) {
             return inputStream.readAllBytes();
         } catch ( IOException exception ) {
