@@ -2,6 +2,7 @@ package node.service.impl;
 
 import common_jpa.dao.AppUserDAO;
 import common_jpa.entity.AppDocument;
+import common_jpa.entity.AppPhoto;
 import common_jpa.entity.AppUser;
 import common_jpa.entity.enums.UserState;
 import lombok.extern.log4j.Log4j;
@@ -73,14 +74,37 @@ public class MainServiceImpl implements MainService {
         try {
             AppDocument document = fileService.processDoc( update.getMessage() );
             //todo: add link for downloading the document
-            String answer = "Document successfully loaded! " +
-                    "Link for downloading: test.test";
+            String answer = "Document successfully loaded! Link for downloading: test.test";
             sendAnswer( answer, chatId );
         } catch ( UploadFileException exception ) {
             log.error( exception );
             String error = "Loading failed. Try again later.";
             sendAnswer( error, chatId );
         }
+    }
+
+    @Override
+    public void processPhotoMessage( Update update ) {
+        saveRawData( update );
+
+        AppUser appUser = findOrSaveAppUser( update );
+        Long chatId = update.getMessage().getChatId();
+
+        if ( isNotAllowedToSendContent( chatId, appUser ) ) {
+            return;
+        }
+
+        try {
+            AppPhoto photo = fileService.processPhoto( update.getMessage() );
+            String answer = "Photo successfully loaded! Link for downloading: test.test";;
+            sendAnswer( answer, chatId );
+        } catch ( UploadFileException exception ) {
+            log.error( exception );
+            String error = "Loading failed. Try again later.";
+            sendAnswer( error, chatId );
+        }
+
+
     }
 
     private boolean isNotAllowedToSendContent( Long chatId, AppUser appUser ) {
@@ -97,21 +121,6 @@ public class MainServiceImpl implements MainService {
         }
 
         return false;
-    }
-
-    @Override
-    public void processPhotoMessage( Update update ) {
-        saveRawData( update );
-
-        AppUser appUser = findOrSaveAppUser( update );
-        Long chatId = update.getMessage().getChatId();
-
-        if ( isNotAllowedToSendContent( chatId, appUser ) ) {
-            return;
-        }
-
-        String answer = "Photo successfully loaded!";
-        sendAnswer( answer, chatId );
     }
 
     private void sendAnswer( String output, Long chatId ) {
