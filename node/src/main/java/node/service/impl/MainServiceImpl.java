@@ -12,6 +12,7 @@ import node.exceptinos.UploadFileException;
 import node.service.FileService;
 import node.service.MainService;
 import node.service.ProducerService;
+import node.service.enums.LinkType;
 import node.service.enums.ServiceCommands;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -73,8 +74,8 @@ public class MainServiceImpl implements MainService {
 
         try {
             AppDocument document = fileService.processDoc( update.getMessage() );
-            //todo: add link for downloading the document
-            String answer = "Document successfully loaded! Link for downloading: test.test";
+            String link = fileService.generateLing( document.getId(), LinkType.GET_DOC );
+            String answer = "Document successfully loaded! Link for downloading: " + link;
             sendAnswer( answer, chatId );
         } catch ( UploadFileException exception ) {
             log.error( exception );
@@ -96,7 +97,9 @@ public class MainServiceImpl implements MainService {
 
         try {
             AppPhoto photo = fileService.processPhoto( update.getMessage() );
-            String answer = "Photo successfully loaded! Link for downloading: test.test";;
+            String link = fileService.generateLing( photo.getId(), LinkType.GET_PHOTO );
+            String answer = "Photo successfully loaded! Link for downloading: " + link;
+            ;
             sendAnswer( answer, chatId );
         } catch ( UploadFileException exception ) {
             log.error( exception );
