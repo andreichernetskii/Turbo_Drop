@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 import rest_service.service.FileService;
+import utils.CryptoTool;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,24 +20,25 @@ import java.io.IOException;
 public class FileServiceImpl implements FileService {
     private final AppDocumentDAO appDocumentDAO;
     private final AppPhotoDAO appPhotoDAO;
+    private final CryptoTool cryptoTool;
 
-    public FileServiceImpl( AppDocumentDAO appDocumentDAO, AppPhotoDAO appPhotoDAO ) {
+
+    public FileServiceImpl( AppDocumentDAO appDocumentDAO, AppPhotoDAO appPhotoDAO, CryptoTool cryptoTool ) {
         this.appDocumentDAO = appDocumentDAO;
         this.appPhotoDAO = appPhotoDAO;
+        this.cryptoTool = cryptoTool;
     }
 
     @Override
-    public AppDocument getDocument( String dockId ) {
-        //todo: add decrypto of hash-string
-        Long id = Long.parseLong( dockId );
-        return appDocumentDAO.findById( id ).orElse( null );
+    public AppDocument getDocument( String hash ) {
+        Long id = cryptoTool.idOf( hash );
+        return ( id != null ) ? appDocumentDAO.findById( id ).orElse( null ) : null;
     }
 
     @Override
-    public AppPhoto getPhoto( String photoId ) {
-        //todo: add decrypto of hash-string
-        Long id = Long.parseLong( photoId );
-        return appPhotoDAO.findById( id ).orElse( null );
+    public AppPhoto getPhoto( String hash ) {
+        Long id = cryptoTool.idOf( hash );
+        return ( id != null ) ? appPhotoDAO.findById( id ).orElse( null ) : null;
     }
 
     @Override
