@@ -18,7 +18,7 @@ import static model.RabbitQueue.*;
 @Component
 @RequiredArgsConstructor
 @Log4j
-public class UpdateController {
+public class UpdateProcessor {
     private TelegramBot telegramBot;
     private final MessageUtils messageUtils;
     private final UpdateProducer updateProducer;
