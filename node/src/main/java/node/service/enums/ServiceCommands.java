@@ -19,7 +19,7 @@ public enum ServiceCommands {
 
     public static ServiceCommands fromValue( String value ) {
         for( ServiceCommands command: ServiceCommands.values() ) {
-            if ( command.equals( value )) return command;
+            if ( command.cmd.equals( value )) return command;
         }
 
         return null;

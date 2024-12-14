@@ -9,6 +9,7 @@ import lombok.extern.log4j.Log4j;
 import node.dao.RawDataDAO;
 import node.entity.RawData;
 import node.exceptinos.UploadFileException;
+import node.service.AppUserService;
 import node.service.FileService;
 import node.service.MainService;
 import node.service.ProducerService;
@@ -19,6 +20,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
+import java.util.Optional;
+
 @Log4j
 @Service
 public class MainServiceImpl implements MainService {
@@ -26,14 +29,17 @@ public class MainServiceImpl implements MainService {
     private final AppUserDAO appUserDAO;
     private final ProducerService producerService;
     private final FileService fileService;
+    private final AppUserService appUserService;
+
 
     public MainServiceImpl( RawDataDAO rawDataDAO,
                             ProducerService producerService,
-                            AppUserDAO appUserDAO, FileService fileService ) {
+                            AppUserDAO appUserDAO, FileService fileService, AppUserService appUserService ) {
         this.rawDataDAO = rawDataDAO;
         this.producerService = producerService;
         this.appUserDAO = appUserDAO;
         this.fileService = fileService;
+        this.appUserService = appUserService;
     }
 
     @Override
@@ -50,8 +56,8 @@ public class MainServiceImpl implements MainService {
             output = cancelProcess( appUser );
         } else if ( UserState.BASIC_STATE.equals( userState ) ) {
             output = processServiceCommand( appUser, serviceCommand );
-        } else if ( UserState.WAIT_FOR_EMAIL.equals( userState ) ) {
-            // todo: add processing e-mails
+        } else if ( UserState.WAIT_FOR_EMAIL_STATE.equals( userState ) ) {
+            output = appUserService.setEmail( appUser, text );
         } else {
             log.error( "Unknown user state!" );
             output = "Unknown error! Provide command /cancel and try again.";
@@ -137,8 +143,7 @@ public class MainServiceImpl implements MainService {
 
     private String processServiceCommand( AppUser appUser, ServiceCommands cmd ) {
         if ( ServiceCommands.REGISTRATION.equals( cmd ) ) {
-            //todo: add registration
-            return "Temporary not available. Work in progress";
+            return appUserService.registerUser( appUser );
         } else if ( ServiceCommands.HELP.equals( cmd ) ) {
             return help();
         } else if ( ServiceCommands.START.equals( cmd ) ) {
@@ -163,22 +168,22 @@ public class MainServiceImpl implements MainService {
 
     public AppUser findOrSaveAppUser( Update update ) {
         User telegramUser = update.getMessage().getFrom();
-        AppUser persistentAppUser = appUserDAO.findAppUserByTelegramUserId( telegramUser.getId() );
+        Optional<AppUser> optionalAppUser = appUserDAO.findByTelegramUserId( telegramUser.getId() );
 
-        if ( persistentAppUser == null ) {
+        if ( optionalAppUser.isEmpty() ) {
             AppUser transientUser = AppUser.builder()
                     .telegramUserId( telegramUser.getId() )
                     .userName( telegramUser.getUserName() )
                     .firstName( telegramUser.getFirstName() )
                     .lastName( telegramUser.getLastName() )
-                    .isActive( true )
+                    .isActive( false )
                     .state( UserState.BASIC_STATE )
                     .build();
 
             return appUserDAO.save( transientUser );
         }
 
-        return persistentAppUser;
+        return optionalAppUser.get();
     }
 
     private void saveRawData( Update update ) {

@@ -1,6 +1,6 @@
 package mail.controller;
 
-import mail.dto.MailParams;
+import dto.MailParams;
 import mail.service.MailSenderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

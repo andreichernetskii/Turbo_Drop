@@ -1,6 +1,6 @@
 package mail.service.impl;
 
-import mail.dto.MailParams;
+import dto.MailParams;
 import mail.service.MailSenderService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
