@@ -1,6 +1,6 @@
 package mail.service;
 
-import mail.dto.MailParams;
+import dto.MailParams;
 
 public interface MailSenderService {
     void send( MailParams mailParams );
