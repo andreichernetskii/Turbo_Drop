@@ -1,5 +1,7 @@
 package dispatcher.controller;
 
+import dispatcher.configuration.RabbitConfig;
+import dispatcher.service.UpdateProducer;
 import dispatcher.utils.MessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -7,27 +9,30 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import dispatcher.service.UpdateProducer;
 
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import static model.RabbitQueue.*;
 
-@Component
 @RequiredArgsConstructor
 @Log4j
+@Component
 public class UpdateProcessor {
     private TelegramBot telegramBot;
+
     private final MessageUtils messageUtils;
+
     private final UpdateProducer updateProducer;
+
+    private final RabbitConfig rabbitConfig;
 
     public void registerBot( TelegramBot telegramBot ) {
         this.telegramBot = telegramBot;
     }
 
     public void processUpdate( Update update ) {
+
         if ( update == null ) {
             log.error( "Received update is null!" );
             return;
@@ -40,21 +45,14 @@ public class UpdateProcessor {
         }
     }
 
+    public void setView( SendMessage sendMessage ) {
+        telegramBot.sendAnswerMessage( sendMessage );
+    }
+
     private void distributeMessageByType( Update update ) {
+
         Message message = update.getMessage();
 
-        // if-else variant
-//        if ( message.getText() != null ) {
-//            processTextMessage( update );
-//        } else if ( message.getDocument() != null ) {
-//            processDocMessage( update );
-//        } else if ( message.getPhoto() != null ) {
-//            processPhotoMessage( update );
-//        } else {
-//            setUnsupportedMessageType( update );
-//        }
-
-        // Map variant
         // Map message types to corresponding processing methods
         Map<Predicate<Message>, Consumer<Update>> messageProcessor = Map.of(
                 Message::hasText, this::processTextMessage,
@@ -74,30 +72,32 @@ public class UpdateProcessor {
     }
 
     private void setUnsupportedMessageType( Update update ) {
+
         SendMessage sendMessage = messageUtils.generateSendMessageWithText( update, "Unsupported message type!" );
         setView( sendMessage );
     }
 
     private void processPhotoMessage( Update update ) {
-        updateProducer.produce( PHOTO_MESSAGE_UPDATE, update );
+
+        updateProducer.produce( rabbitConfig.getPhotoMessageUpdateQueue(), update );
         setFileIsReceivedView( update );
     }
 
     private void processDocMessage( Update update ) {
-        updateProducer.produce( DOC_MESSAGE_UPDATE, update );
+
+        updateProducer.produce( rabbitConfig.getDocMessageUpdateQueue(), update );
     }
 
     private void processTextMessage( Update update ) {
-        updateProducer.produce( TEXT_MESSAGE_UPDATE, update );
+
+        updateProducer.produce( rabbitConfig.getTextMessageUpdateQueue(), update );
     }
 
     private void setFileIsReceivedView( Update update ) {
+
         SendMessage sendMessage =
                 messageUtils.generateSendMessageWithText( update, "File is being processed." );
         setView( sendMessage );
     }
-
-    public void setView( SendMessage sendMessage ) {
-        telegramBot.sendAnswerMessage( sendMessage );
-    }
 }
+

@@ -1,23 +1,24 @@
 package mail.service.impl;
 
 import dto.MailParams;
+import lombok.RequiredArgsConstructor;
 import mail.service.MailSenderService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class MailSenderServiceImpl implements MailSenderService {
+
     private final JavaMailSender javaMailSender;
+
     @Value( "${spring.mail.username}" )
     private String emailFrom;
+
     @Value( "${service.activation.uri}" )
     private String activationServiceUri;
-
-    public MailSenderServiceImpl( JavaMailSender javaMailSender ) {
-        this.javaMailSender = javaMailSender;
-    }
 
     @Override
     public void send( MailParams mailParams ) {

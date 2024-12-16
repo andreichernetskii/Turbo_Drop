@@ -5,6 +5,7 @@ import common_jpa.entity.AppDocument;
 import common_jpa.entity.AppPhoto;
 import common_jpa.entity.AppUser;
 import common_jpa.entity.enums.UserState;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import node.dao.RawDataDAO;
 import node.entity.RawData;
@@ -16,6 +17,7 @@ import node.service.ProducerService;
 import node.service.enums.LinkType;
 import node.service.enums.ServiceCommands;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -23,27 +25,25 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import java.util.Optional;
 
 @Log4j
+@RequiredArgsConstructor
 @Service
 public class MainServiceImpl implements MainService {
+
     private final RawDataDAO rawDataDAO;
+
     private final AppUserDAO appUserDAO;
+
     private final ProducerService producerService;
+
     private final FileService fileService;
+
     private final AppUserService appUserService;
 
 
-    public MainServiceImpl( RawDataDAO rawDataDAO,
-                            ProducerService producerService,
-                            AppUserDAO appUserDAO, FileService fileService, AppUserService appUserService ) {
-        this.rawDataDAO = rawDataDAO;
-        this.producerService = producerService;
-        this.appUserDAO = appUserDAO;
-        this.fileService = fileService;
-        this.appUserService = appUserService;
-    }
-
+    @Transactional
     @Override
     public void processTextMessage( Update update ) {
+
         saveRawData( update );
 
         AppUser appUser = findOrSaveAppUser( update );
@@ -69,6 +69,7 @@ public class MainServiceImpl implements MainService {
 
     @Override
     public void processDocMessage( Update update ) {
+
         saveRawData( update );
 
         AppUser appUser = findOrSaveAppUser( update );
@@ -92,6 +93,7 @@ public class MainServiceImpl implements MainService {
 
     @Override
     public void processPhotoMessage( Update update ) {
+
         saveRawData( update );
 
         AppUser appUser = findOrSaveAppUser( update );
@@ -117,6 +119,7 @@ public class MainServiceImpl implements MainService {
     }
 
     private boolean isNotAllowedToSendContent( Long chatId, AppUser appUser ) {
+
         UserState userState = appUser.getState();
 
         if ( !appUser.getIsActive() ) {
@@ -133,6 +136,7 @@ public class MainServiceImpl implements MainService {
     }
 
     private void sendAnswer( String output, Long chatId ) {
+
         SendMessage sendMessage = new SendMessage();
 
         sendMessage.setChatId( chatId );
@@ -142,6 +146,7 @@ public class MainServiceImpl implements MainService {
     }
 
     private String processServiceCommand( AppUser appUser, ServiceCommands cmd ) {
+
         if ( ServiceCommands.REGISTRATION.equals( cmd ) ) {
             return appUserService.registerUser( appUser );
         } else if ( ServiceCommands.HELP.equals( cmd ) ) {
@@ -154,12 +159,14 @@ public class MainServiceImpl implements MainService {
     }
 
     private String help() {
+
         return "List of commands:\n" +
                 "/cancel - cancel the current command;\n" +
                 "/registration - user registration";
     }
 
     private String cancelProcess( AppUser appUser ) {
+
         appUser.setState( UserState.BASIC_STATE );
         appUserDAO.save( appUser );
 
@@ -167,6 +174,7 @@ public class MainServiceImpl implements MainService {
     }
 
     public AppUser findOrSaveAppUser( Update update ) {
+
         User telegramUser = update.getMessage().getFrom();
         Optional<AppUser> optionalAppUser = appUserDAO.findByTelegramUserId( telegramUser.getId() );
 
@@ -187,6 +195,7 @@ public class MainServiceImpl implements MainService {
     }
 
     private void saveRawData( Update update ) {
+
         RawData rawData = RawData.builder()
                 .event( update )
                 .build();

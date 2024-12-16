@@ -3,10 +3,9 @@ package rest_service.controller;
 import common_jpa.entity.AppDocument;
 import common_jpa.entity.AppPhoto;
 import common_jpa.entity.BinaryContent;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,17 +17,16 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Log4j
+@RequiredArgsConstructor
 @RequestMapping( "/file" )
 @RestController
 public class FileController {
-    private final FileService fileService;
 
-    public FileController( FileService fileService ) {
-        this.fileService = fileService;
-    }
+    private final FileService fileService;
 
     @GetMapping( "/get-doc" )
     public void getDoc( @RequestParam( "id" ) String id, HttpServletResponse response ) {
+
         AppDocument doc = fileService.getDocument( id );
 
         if ( doc == null ) {
@@ -52,6 +50,7 @@ public class FileController {
 
     @GetMapping( "/get-photo" )
     public void getPhoto( @RequestParam( "id" ) String id, HttpServletResponse response ) {
+
         //todo: add ControllerAdvice for forming a badRequest
         AppPhoto photo = fileService.getPhoto( id );
 

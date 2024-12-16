@@ -6,13 +6,18 @@ import common_jpa.dao.BinaryContentDAO;
 import common_jpa.entity.AppDocument;
 import common_jpa.entity.AppPhoto;
 import common_jpa.entity.BinaryContent;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import node.exceptinos.UploadFileException;
 import node.service.FileService;
 import node.service.enums.LinkType;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.api.objects.Document;
@@ -26,30 +31,33 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 @Log4j
+@RequiredArgsConstructor
 @Service
 public class FileServiceImpl implements FileService {
+
     @Value( "${token}" )
     private String token;
+
     @Value( "${service.file_info.uri}" )
     private String fileInfoUri;
+
     @Value( "${service.file_storage.uri}" )
     private String fileStorageUri;
+
     @Value( "${rest-service.link.address}" )
     private String linkAddress;
-    private final AppDocumentDAO appDocumentDAO;
-    private final AppPhotoDAO appPhotoDAO;
-    private final BinaryContentDAO binaryContentDAO;
-    private final CryptoTool cryptoTool;
 
-    public FileServiceImpl( AppDocumentDAO appDocumentDAO, AppPhotoDAO appPhotoDAO, BinaryContentDAO binaryContentDAO, CryptoTool cryptoTool ) {
-        this.appDocumentDAO = appDocumentDAO;
-        this.appPhotoDAO = appPhotoDAO;
-        this.binaryContentDAO = binaryContentDAO;
-        this.cryptoTool = cryptoTool;
-    }
+    private final AppDocumentDAO appDocumentDAO;
+
+    private final AppPhotoDAO appPhotoDAO;
+
+    private final BinaryContentDAO binaryContentDAO;
+
+    private final CryptoTool cryptoTool;
 
     @Override
     public AppDocument processDoc( Message telegramMessage ) {
+
         Document telegramDoc = telegramMessage.getDocument();
         ResponseEntity<String> response = getFilePath( telegramDoc.getFileId() );
 
@@ -65,6 +73,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public AppPhoto processPhoto( Message telegramMessage ) {
+
         // telegramAPI saves photos in few size variants
         // getting last variant size of loaded photo
         int photoSizeCount = telegramMessage.getPhoto().size();
@@ -84,11 +93,13 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public String generateLing( Long docId, LinkType linkType ) {
+
         String hash = cryptoTool.hashOf( docId );
         return "http://" + linkAddress + linkType + "?id=" + hash;
     }
 
     private BinaryContent getPersistentBinaryContent( ResponseEntity<String> response ) {
+
         String filePath = getFilePath( response );
         BinaryContent transientBinaryContent = BinaryContent
                 .builder()
@@ -99,6 +110,7 @@ public class FileServiceImpl implements FileService {
     }
 
     private static String getFilePath( ResponseEntity<String> response ) {
+
         JSONObject jsonObject = new JSONObject( response.getBody() );
 
         return String.valueOf(
@@ -109,6 +121,7 @@ public class FileServiceImpl implements FileService {
     }
 
     private AppDocument buildTransientAppDoc( Document telegramDoc, BinaryContent persistentBinaryContent ) {
+
         return AppDocument.builder()
                 .telegramFileId( telegramDoc.getFileId() )
                 .docName( telegramDoc.getFileName() )
@@ -119,6 +132,7 @@ public class FileServiceImpl implements FileService {
     }
 
     private AppPhoto buildTransientAppPhoto( PhotoSize telegramPhoto, BinaryContent persistentBinaryContent ) {
+
         return AppPhoto.builder()
                 .telegramFileId( telegramPhoto.getFileId() )
                 .binaryContent( persistentBinaryContent )
@@ -127,6 +141,7 @@ public class FileServiceImpl implements FileService {
     }
 
     private ResponseEntity<String> getFilePath( String fileId ) {
+
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<String> request = new HttpEntity<>( headers );
@@ -142,6 +157,7 @@ public class FileServiceImpl implements FileService {
     }
 
     private byte[] downloadFileInByte( String filePath ) {
+
         String fullUri = fileStorageUri
                 .replace( "{token}", token )
                 .replace( "{filePath}", filePath );

@@ -1,4 +1,6 @@
 application.properties
+application.yaml
+.gitignore
 logs/
 .idea
 
