@@ -1,5 +1,6 @@
 package node.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import node.service.ConsumerService;
 import node.service.MainService;
@@ -7,34 +8,33 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import static model.RabbitQueue.*;
-
-@Service
+@RequiredArgsConstructor
 @Log4j
+@Service
 public class ConsumerServiceImpl implements ConsumerService {
+
     private final MainService mainService;
 
-    public ConsumerServiceImpl( MainService mainService ) {
-        this.mainService = mainService;
-    }
-
     @Override
-    @RabbitListener( queues = TEXT_MESSAGE_UPDATE )
+    @RabbitListener( queues = "${spring.rabbitmq.queues.text-message-update}" )
     public void consumeTextMessageUpdate( Update update ) {
+
         log.debug( "NODE: Text message is received." );
         mainService.processTextMessage( update );
     }
 
     @Override
-    @RabbitListener( queues = DOC_MESSAGE_UPDATE )
+    @RabbitListener( queues = "${spring.rabbitmq.queues.doc-message-update}" )
     public void consumeDocMessageUpdate( Update update ) {
+
         log.debug( "NODE: Doc message is received." );
         mainService.processDocMessage( update );
     }
 
     @Override
-    @RabbitListener( queues = PHOTO_MESSAGE_UPDATE )
+    @RabbitListener( queues = "${spring.rabbitmq.queues.photo-message-update}" )
     public void consumePhotoMessageUpdate( Update update ) {
+
         log.debug( "NODE: Photo message is received." );
         mainService.processPhotoMessage( update );
     }

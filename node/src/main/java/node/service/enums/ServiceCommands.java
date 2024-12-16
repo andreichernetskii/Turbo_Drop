@@ -1,6 +1,7 @@
 package node.service.enums;
 
 public enum ServiceCommands {
+
     HELP( "/help" ),
     REGISTRATION( "/registration" ),
     CANCEL( "/cancel" ),
