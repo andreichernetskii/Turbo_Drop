@@ -32,6 +32,7 @@ public class UpdateProcessor {
     }
 
     public void processUpdate( Update update ) {
+
         if ( update == null ) {
             log.error( "Received update is null!" );
             return;
@@ -49,6 +50,7 @@ public class UpdateProcessor {
     }
 
     private void distributeMessageByType( Update update ) {
+
         Message message = update.getMessage();
 
         // Map message types to corresponding processing methods
@@ -70,24 +72,29 @@ public class UpdateProcessor {
     }
 
     private void setUnsupportedMessageType( Update update ) {
+
         SendMessage sendMessage = messageUtils.generateSendMessageWithText( update, "Unsupported message type!" );
         setView( sendMessage );
     }
 
     private void processPhotoMessage( Update update ) {
+
         updateProducer.produce( rabbitConfig.getPhotoMessageUpdateQueue(), update );
         setFileIsReceivedView( update );
     }
 
     private void processDocMessage( Update update ) {
+
         updateProducer.produce( rabbitConfig.getDocMessageUpdateQueue(), update );
     }
 
     private void processTextMessage( Update update ) {
+
         updateProducer.produce( rabbitConfig.getTextMessageUpdateQueue(), update );
     }
 
     private void setFileIsReceivedView( Update update ) {
+
         SendMessage sendMessage =
                 messageUtils.generateSendMessageWithText( update, "File is being processed." );
         setView( sendMessage );

@@ -13,16 +13,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitConfig {
 
-    @Value( "${spring.rabbitmq.text-message-update}" )
+    @Value( "${spring.rabbitmq.queues.text-message-update}" )
     private String textMessageUpdateQueue;
 
-    @Value( "${spring.rabbitmq.doc-message-update}" )
+    @Value( "${spring.rabbitmq.queues.doc-message-update}" )
     private String docMessageUpdateQueue;
 
-    @Value( "${spring.rabbitmq.photo-message-update}" )
+    @Value( "${spring.rabbitmq.queues.photo-message-update}" )
     private String photoMessageUpdateQueue;
 
-    @Value( "${spring.rabbitmq.answer-message}" )
+    @Value( "${spring.rabbitmq.queues.answer-message}" )
     private String answerMessageQueue;
 
     @Bean

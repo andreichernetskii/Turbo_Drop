@@ -14,7 +14,7 @@ public class AnswerConsumerImpl implements AnswerConsumer {
     private final UpdateProcessor updateProcessor;
 
     @Override
-    @RabbitListener( queues = "${spring.rabbitmq.answer-message}" )
+    @RabbitListener( queues = "${spring.rabbitmq.queues.answer-message}" )
     public void consume( SendMessage sendMessage ) {
         updateProcessor.setView( sendMessage );
     }
