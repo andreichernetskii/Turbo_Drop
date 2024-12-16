@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-import static model.RabbitQueue.ANSWER_MESSAGE_UPDATE;
-
 @RequiredArgsConstructor
 @Service
 public class ProducerServiceImpl implements ProducerService {
