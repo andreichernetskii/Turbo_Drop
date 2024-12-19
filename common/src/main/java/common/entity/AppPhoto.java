@@ -1,4 +1,4 @@
-package common_jpa.entity;
+package common.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +20,7 @@ import javax.persistence.OneToOne;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class AppDocument {
+public class AppPhoto {
 
     @Id
     @GeneratedValue( strategy = GenerationType.IDENTITY )
@@ -28,12 +28,8 @@ public class AppDocument {
 
     private String telegramFileId;
 
-    private String docName;
-
     @OneToOne
     private BinaryContent binaryContent;
 
-    private String mimeType;
-
-    private Long fileSize;
+    private Integer fileSize;
 }

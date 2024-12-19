@@ -1,10 +1,10 @@
 package node.service.impl;
 
-import common_jpa.dao.AppUserDAO;
-import common_jpa.entity.AppDocument;
-import common_jpa.entity.AppPhoto;
-import common_jpa.entity.AppUser;
-import common_jpa.entity.enums.UserState;
+import common.dao.AppUserDAO;
+import common.entity.AppDocument;
+import common.entity.AppPhoto;
+import common.entity.AppUser;
+import common.entity.enums.UserState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import node.dao.RawDataDAO;

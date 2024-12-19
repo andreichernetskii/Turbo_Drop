@@ -1,8 +1,8 @@
 package rest_service.controller;
 
-import common_jpa.entity.AppDocument;
-import common_jpa.entity.AppPhoto;
-import common_jpa.entity.BinaryContent;
+import common.entity.AppDocument;
+import common.entity.AppPhoto;
+import common.entity.BinaryContent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.http.MediaType;

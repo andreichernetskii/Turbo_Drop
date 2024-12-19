@@ -1,6 +1,6 @@
-package common_jpa.entity;
+package common.entity;
 
-import common_jpa.entity.enums.UserState;
+import common.entity.enums.UserState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

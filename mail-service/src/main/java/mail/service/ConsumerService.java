@@ -1,6 +1,6 @@
 package mail.service;
 
-import dto.MailParams;
+import common.dto.MailParams;
 
 public interface ConsumerService {
 

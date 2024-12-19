@@ -1,6 +1,6 @@
-package common_jpa.dao;
+package common.dao;
 
-import common_jpa.entity.AppUser;
+import common.entity.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

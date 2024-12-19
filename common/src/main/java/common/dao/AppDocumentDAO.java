@@ -1,6 +1,6 @@
-package common_jpa.dao;
+package common.dao;
 
-import common_jpa.entity.AppDocument;
+import common.entity.AppDocument;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AppDocumentDAO extends JpaRepository<AppDocument, Long> {

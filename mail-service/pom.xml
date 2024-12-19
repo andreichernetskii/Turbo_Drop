@@ -22,7 +22,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <common-utils.version>1.0-SNAPSHOT</common-utils.version>
+        <common.version>1.0-SNAPSHOT</common.version>
         <maven.compiler.plugin.version>3.5.1</maven.compiler.plugin.version>
         <lombok.version>1.18.22</lombok.version>
         <log4j.version>1.2.17</log4j.version>
@@ -48,8 +48,14 @@
 
         <dependency>
             <groupId>org.example</groupId>
-            <artifactId>common-utils</artifactId>
-            <version>${common-utils.version}</version>
+            <artifactId>common</artifactId>
+            <version>${common.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-data-jpa</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

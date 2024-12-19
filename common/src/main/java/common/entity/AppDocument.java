@@ -1,4 +1,4 @@
-package common_jpa.entity;
+package common.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
 @Getter
 @Setter
@@ -19,11 +20,20 @@ import javax.persistence.Id;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class BinaryContent {
+public class AppDocument {
 
     @Id
     @GeneratedValue( strategy = GenerationType.IDENTITY )
     private Long id;
 
-    private byte[] fileAsArrayOfBytes;
+    private String telegramFileId;
+
+    private String docName;
+
+    @OneToOne
+    private BinaryContent binaryContent;
+
+    private String mimeType;
+
+    private Long fileSize;
 }

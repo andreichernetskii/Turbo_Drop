@@ -1,6 +1,6 @@
 package node.service;
 
-import common_jpa.entity.AppUser;
+import common.entity.AppUser;
 
 public interface AppUserService {
 

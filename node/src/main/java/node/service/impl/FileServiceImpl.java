@@ -1,16 +1,17 @@
 package node.service.impl;
 
-import common_jpa.dao.AppDocumentDAO;
-import common_jpa.dao.AppPhotoDAO;
-import common_jpa.dao.BinaryContentDAO;
-import common_jpa.entity.AppDocument;
-import common_jpa.entity.AppPhoto;
-import common_jpa.entity.BinaryContent;
+import common.dao.AppDocumentDAO;
+import common.dao.AppPhotoDAO;
+import common.dao.BinaryContentDAO;
+import common.entity.AppDocument;
+import common.entity.AppPhoto;
+import common.entity.BinaryContent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import node.exceptinos.UploadFileException;
 import node.service.FileService;
 import node.service.enums.LinkType;
+import org.hashids.Hashids;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -23,7 +24,6 @@ import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
-import utils.CryptoTool;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,7 +53,7 @@ public class FileServiceImpl implements FileService {
 
     private final BinaryContentDAO binaryContentDAO;
 
-    private final CryptoTool cryptoTool;
+    private final Hashids hashids;
 
     @Override
     public AppDocument processDoc( Message telegramMessage ) {
@@ -94,7 +94,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public String generateLing( Long docId, LinkType linkType ) {
 
-        String hash = cryptoTool.hashOf( docId );
+        String hash = hashids.encode( docId );
         return "http://" + linkAddress + linkType + "?id=" + hash;
     }
 

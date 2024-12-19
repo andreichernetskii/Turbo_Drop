@@ -1,6 +1,6 @@
 package mail.service.impl;
 
-import dto.MailParams;
+import common.dto.MailParams;
 import lombok.RequiredArgsConstructor;
 import mail.service.ConsumerService;
 import mail.service.MailSenderService;

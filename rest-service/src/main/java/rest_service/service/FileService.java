@@ -1,7 +1,7 @@
 package rest_service.service;
 
-import common_jpa.entity.AppDocument;
-import common_jpa.entity.AppPhoto;
+import common.entity.AppDocument;
+import common.entity.AppPhoto;
 
 public interface FileService {
 

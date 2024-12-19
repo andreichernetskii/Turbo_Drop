@@ -1,6 +1,6 @@
 package mail.service.impl;
 
-import dto.MailParams;
+import common.dto.MailParams;
 import lombok.RequiredArgsConstructor;
 import mail.service.MailSenderService;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +22,7 @@ public class MailSenderServiceImpl implements MailSenderService {
 
     @Override
     public void send( MailParams mailParams ) {
+
         String subject = "Account activation";
         String messageBody = getActivationMailBody( mailParams.getId() );
         String emailTo = mailParams.getEmailTo();
@@ -36,6 +37,7 @@ public class MailSenderServiceImpl implements MailSenderService {
     }
 
     private String getActivationMailBody( String id ) {
+
         String msg = String.format(
                 "To verify your account, please follow the link:\n%s ", activationServiceUri
         );

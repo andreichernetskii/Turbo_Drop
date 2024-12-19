@@ -23,8 +23,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javax-mail.version>1.4</javax-mail.version>
-        <common-utils.version>1.0-SNAPSHOT</common-utils.version>
-        <common-jpa.version>1.0-SNAPSHOT</common-jpa.version>
+        <common.version>1.0-SNAPSHOT</common.version>
         <hibernate-types.version>2.2.2</hibernate-types.version>
         <postgresql.version>42.2.18</postgresql.version>
         <maven.compiler.plugin.version>3.5.1</maven.compiler.plugin.version>
@@ -78,14 +77,8 @@
 
         <dependency>
             <groupId>org.example</groupId>
-            <artifactId>common-jpa</artifactId>
-            <version>${common-jpa.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.example</groupId>
-            <artifactId>common-utils</artifactId>
-            <version>${common-utils.version}</version>
+            <artifactId>common</artifactId>
+            <version>${common.version}</version>
         </dependency>
 
         <dependency>

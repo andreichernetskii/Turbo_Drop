@@ -1,4 +1,4 @@
-package common_jpa.entity.enums;
+package common.entity.enums;
 
 public enum UserState {
     BASIC_STATE, // full service

@@ -1,16 +1,16 @@
 package node.service.impl;
 
-import common_jpa.dao.AppUserDAO;
-import common_jpa.entity.AppUser;
-import common_jpa.entity.enums.UserState;
-import dto.MailParams;
+import common.dao.AppUserDAO;
+import common.entity.AppUser;
+import common.entity.enums.UserState;
+import common.dto.MailParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import node.service.AppUserService;
+import org.hashids.Hashids;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import utils.CryptoTool;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -23,7 +23,7 @@ public class AppUserServiceImpl implements AppUserService {
 
     private final AppUserDAO appUserDAO;
 
-    private final CryptoTool cryptoTool;
+    private final Hashids hashids;
 
     @Value( "${spring.rabbitmq.queues.registration-mail}" )
     private String registrationMailQueue;
@@ -63,7 +63,7 @@ public class AppUserServiceImpl implements AppUserService {
             appUser.setState( UserState.BASIC_STATE );
             appUser = appUserDAO.save( appUser );
 
-            String cryptoUserId = cryptoTool.hashOf( appUser.getId() );
+            String cryptoUserId = hashids.encode( appUser.getId() );
 
             sendRegistrationMail( cryptoUserId, email );
 

@@ -1,14 +1,14 @@
 package rest_service.service.impl;
 
-import common_jpa.dao.AppDocumentDAO;
-import common_jpa.dao.AppPhotoDAO;
-import common_jpa.entity.AppDocument;
-import common_jpa.entity.AppPhoto;
+import common.dao.AppDocumentDAO;
+import common.dao.AppPhotoDAO;
+import common.entity.AppDocument;
+import common.entity.AppPhoto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Service;
 import rest_service.service.FileService;
-import utils.CryptoTool;
+import rest_service.utils.Decoder;
 
 @Log4j
 @RequiredArgsConstructor
@@ -19,19 +19,19 @@ public class FileServiceImpl implements FileService {
 
     private final AppPhotoDAO appPhotoDAO;
 
-    private final CryptoTool cryptoTool;
+    private final Decoder decoder;
 
     @Override
     public AppDocument getDocument( String hash ) {
 
-        Long id = cryptoTool.idOf( hash );
+        Long id = decoder.idOf( hash );
         return ( id != null ) ? appDocumentDAO.findById( id ).orElse( null ) : null;
     }
 
     @Override
     public AppPhoto getPhoto( String hash ) {
 
-        Long id = cryptoTool.idOf( hash );
+        Long id = decoder.idOf( hash );
         return ( id != null ) ? appPhotoDAO.findById( id ).orElse( null ) : null;
     }
 }
