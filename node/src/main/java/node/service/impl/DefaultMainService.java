@@ -27,7 +27,7 @@ import java.util.Optional;
 @Log4j
 @RequiredArgsConstructor
 @Service
-public class MainServiceImpl implements MainService {
+public class DefaultMainService implements MainService {
 
     private final RawDataDAO rawDataDAO;
 

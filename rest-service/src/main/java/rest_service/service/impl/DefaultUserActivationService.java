@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
-public class UserActivationServiceImpl implements UserActivationService {
+public class DefaultUserActivationService implements UserActivationService {
 
     private final AppUserDAO appUserDAO;
 

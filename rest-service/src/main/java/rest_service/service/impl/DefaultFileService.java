@@ -13,7 +13,7 @@ import rest_service.utils.Decoder;
 @Log4j
 @RequiredArgsConstructor
 @Service
-public class FileServiceImpl implements FileService {
+public class DefaultFileService implements FileService {
 
     private final AppDocumentDAO appDocumentDAO;
 

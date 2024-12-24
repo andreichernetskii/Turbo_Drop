@@ -10,7 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Log4j
 @RequiredArgsConstructor
 @Service
-public class UpdateProducerImpl implements UpdateProducer {
+public class DefaultUpdateProducer implements UpdateProducer {
 
     private final RabbitTemplate rabbitTemplate;
 

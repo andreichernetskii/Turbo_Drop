@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
-public class ConsumerServiceImpl implements ConsumerService {
+public class DefaultConsumerService implements ConsumerService {
 
     private final MailSenderService mailSenderService;
 

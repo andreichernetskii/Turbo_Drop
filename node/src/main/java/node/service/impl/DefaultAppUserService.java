@@ -19,7 +19,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Log4j
 @Service
-public class AppUserServiceImpl implements AppUserService {
+public class DefaultAppUserService implements AppUserService {
 
     private final AppUserDAO appUserDAO;
 

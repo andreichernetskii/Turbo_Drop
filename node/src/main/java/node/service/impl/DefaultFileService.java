@@ -33,7 +33,7 @@ import java.net.URL;
 @Log4j
 @RequiredArgsConstructor
 @Service
-public class FileServiceImpl implements FileService {
+public class DefaultFileService implements FileService {
 
     @Value( "${token}" )
     private String token;

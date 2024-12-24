@@ -11,7 +11,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @RequiredArgsConstructor
 @Log4j
 @Service
-public class ConsumerServiceImpl implements ConsumerService {
+public class DefaultConsumerService implements ConsumerService {
 
     private final MainService mainService;
 

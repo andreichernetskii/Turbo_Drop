@@ -9,7 +9,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 @RequiredArgsConstructor
 @Service
-public class ProducerServiceImpl implements ProducerService {
+public class DefaultProducerService implements ProducerService {
 
     private final RabbitTemplate rabbitTemplate;
 
