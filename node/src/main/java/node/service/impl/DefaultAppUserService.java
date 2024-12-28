@@ -16,6 +16,10 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import java.util.Optional;
 
+/**
+ * Implementation of the {@link AppUserService} interface.
+ * This service manages user registration, including email validation and sending registration emails.
+ */
 @RequiredArgsConstructor
 @Log4j
 @Service
@@ -30,7 +34,14 @@ public class DefaultAppUserService implements AppUserService {
 
     private final RabbitTemplate rabbitTemplate;
 
-
+    /**
+     * Registers a new user in the system.
+     * If the user is already active or has a pending email confirmation, appropriate messages are returned.
+     * Otherwise, the user's state is updated to wait for email input.
+     *
+     * @param appUser the user entity to register.
+     * @return a message indicating the next step or the current registration status.
+     */
     @Override
     public String registerUser( AppUser appUser ) {
 
@@ -47,6 +58,14 @@ public class DefaultAppUserService implements AppUserService {
         return "Please enter your email";
     }
 
+    /**
+     * Sets the email for a user, validates the email, and sends a registration confirmation email if valid.
+     * If the email is already in use, an appropriate message is returned.
+     *
+     * @param appUser the user entity to associate with the email.
+     * @param email the email address to be validated and associated with the user.
+     * @return a message indicating the result of the email setting process.
+     */
     @Override
     public String setEmail( AppUser appUser, String email ) {
 
@@ -75,6 +94,13 @@ public class DefaultAppUserService implements AppUserService {
         }
     }
 
+    /**
+     * Sends a registration confirmation email to the specified address.
+     * The email contains a unique user identifier for account verification.
+     *
+     * @param cryptoUserId the encoded unique identifier of the user.
+     * @param email the email address to send the registration message to.
+     */
     private void sendRegistrationMail( String cryptoUserId, String email ) {
 
         MailParams mailParams = MailParams.builder()

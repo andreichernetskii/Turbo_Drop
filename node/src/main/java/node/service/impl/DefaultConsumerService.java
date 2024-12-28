@@ -8,6 +8,11 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+/**
+ * Implementation of the {@link ConsumerService} interface for consuming updates from RabbitMQ.
+ * This service listens for updates related to text, document, and photo messages and delegates processing
+ * to the {@link MainService}.
+ */
 @RequiredArgsConstructor
 @Log4j
 @Service

@@ -1,4 +1,4 @@
-package node.exceptinos;
+package node.exceptions;
 
 public class UploadFileException extends RuntimeException {
 
