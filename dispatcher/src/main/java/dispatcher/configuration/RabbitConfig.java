@@ -8,7 +8,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-
+/**
+ * Configuration class for RabbitMQ setup.
+ *
+ * This class defines queues for processing various types of messages and configures a JSON message converter
+ * for serializing and deserializing messages sent to and received from RabbitMQ.
+ */
 @Getter
 @Configuration
 public class RabbitConfig {
