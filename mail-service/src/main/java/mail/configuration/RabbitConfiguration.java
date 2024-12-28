@@ -8,6 +8,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration class for RabbitMQ integration in the Mail service.
+ *
+ * This class defines the queue for handling registration email messages and configures
+ * a JSON message converter for serializing and deserializing messages sent to and received from RabbitMQ.
+ */
 @Getter
 @Configuration
 public class RabbitConfiguration {
