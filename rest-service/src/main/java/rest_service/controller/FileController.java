@@ -16,6 +16,10 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * REST controller for handling file-related operations.
+ * Provides endpoints for downloading documents and photos.
+ */
 @Log4j
 @RequiredArgsConstructor
 @RequestMapping( "/file" )
@@ -24,6 +28,17 @@ public class FileController {
 
     private final FileService fileService;
 
+    /**
+     * Handles HTTP GET requests for downloading a document.
+     * If the requested document exists, it is returned as a file download.
+     * Sets the HTTP response status to:
+     * - 200 (OK) if the document is successfully retrieved.
+     * - 400 (Bad Request) if the document with the provided ID does not exist.
+     * - 500 (Internal Server Error) if an I/O exception occurs during the process.
+     *
+     * @param id       The unique identifier of the document.
+     * @param response The HTTP response object used to write the file to the client.
+     */
     @GetMapping( "/get-doc" )
     public void getDoc( @RequestParam( "id" ) String id, HttpServletResponse response ) {
 
@@ -48,6 +63,17 @@ public class FileController {
         }
     }
 
+    /**
+     * Handles HTTP GET requests for downloading a photo.
+     * If the requested photo exists, it is returned as a file download in JPEG format.
+     * Sets the HTTP response status to:
+     * - 200 (OK) if the photo is successfully retrieved.
+     * - 400 (Bad Request) if the photo with the provided ID does not exist.
+     * - 500 (Internal Server Error) if an I/O exception occurs during the process.
+     *
+     * @param id       The unique identifier of the photo.
+     * @param response The HTTP response object used to write the file to the client.
+     */
     @GetMapping( "/get-photo" )
     public void getPhoto( @RequestParam( "id" ) String id, HttpServletResponse response ) {
 
