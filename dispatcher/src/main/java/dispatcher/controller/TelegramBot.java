@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.bots.TelegramWebhookBot;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -23,7 +21,7 @@ import javax.annotation.PostConstruct;
 @Log4j
 @RequiredArgsConstructor
 @Component
-public class TelegramBot extends TelegramWebhookBot {
+public class TelegramBot extends TelegramLongPollingBot {
 
     @Value( "${bot.name}" )
     private String botName;
@@ -31,31 +29,16 @@ public class TelegramBot extends TelegramWebhookBot {
     @Value( "${bot.token}" )
     private String botToken;
 
-    @Value( "${bot.uri}" )
-    private String botUri;
-
     private final UpdateProcessor updateProcessor;
 
     /**
-     * Initializes the bot by registering it with the UpdateProcessor and configuring the webhook.
+     * Initializes the bot by registering it with the UpdateProcessor.
      *
      * This method is annotated with {@code @PostConstruct}, ensuring it runs automatically
      * after the bot instance is created and dependencies are injected.
      */
     @PostConstruct
-    public void init() {
-
-        updateProcessor.registerBot( this );
-
-        try {
-            SetWebhook setWebhook = SetWebhook.builder()
-                    .url( botUri )
-                    .build();
-            this.setWebhook( setWebhook );
-        } catch ( TelegramApiException e ) {
-            log.error( e );
-        }
-    }
+    public void init() { updateProcessor.registerBot( this ); }
 
     /**
      * Returns the bot's username.
@@ -95,19 +78,8 @@ public class TelegramBot extends TelegramWebhookBot {
         }
     }
 
-    /**
-     * Returns the endpoint path for receiving updates via the webhook.
-     * This must match the webhook URL registered on Telegram servers.
-     *
-     * @return the path for webhook updates, default is "/update".
-     */
     @Override
-    public String getBotPath() {
-        return "/update";
-    }
-
-    @Override
-    public BotApiMethod<?> onWebhookUpdateReceived( Update update ) {
-        return null;
+    public void onUpdateReceived( Update update ) {
+        updateProcessor.processUpdate( update );
     }
 }
