@@ -9,6 +9,8 @@ on:
       - "node/**"
       - "rest-service/**"
       - "common/**"
+      
+  workflow_dispatch:
 
 jobs:
   build:
