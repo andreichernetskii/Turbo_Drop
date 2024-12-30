@@ -8,7 +8,7 @@ import common.entity.AppPhoto;
 import common.entity.BinaryContent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
-import node.exceptinos.UploadFileException;
+import node.exceptions.UploadFileException;
 import node.service.FileService;
 import node.service.enums.LinkType;
 import org.hashids.Hashids;
@@ -30,6 +30,11 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+/**
+ * Implementation of the {@link FileService} interface for processing file uploads from Telegram.
+ * This service handles the processing of document and photo files, downloads them from the Telegram server,
+ * saves the binary content in the database, and generates links for the stored files.
+ */
 @Log4j
 @RequiredArgsConstructor
 @Service
@@ -55,6 +60,13 @@ public class DefaultFileService implements FileService {
 
     private final Hashids hashids;
 
+    /**
+     * Processes a document uploaded via Telegram, retrieves its binary content, and stores it in the database.
+     *
+     * @param telegramMessage the Telegram message containing the document
+     * @return the saved {@link AppDocument} entity
+     * @throws UploadFileException if the file cannot be processed
+     */
     @Override
     public AppDocument processDoc( Message telegramMessage ) {
 
@@ -71,6 +83,13 @@ public class DefaultFileService implements FileService {
         }
     }
 
+    /**
+     * Processes a photo uploaded via Telegram, retrieves its binary content, and stores it in the database.
+     *
+     * @param telegramMessage the Telegram message containing the photo
+     * @return the saved {@link AppPhoto} entity
+     * @throws UploadFileException if the file cannot be processed
+     */
     @Override
     public AppPhoto processPhoto( Message telegramMessage ) {
 
@@ -91,13 +110,26 @@ public class DefaultFileService implements FileService {
         }
     }
 
+    /**
+     * Generates a link for the file based on its ID and type.
+     *
+     * @param docId    the document's ID
+     * @param linkType the type of link to generate (e.g., "view", "download")
+     * @return the generated link as a {@link String}
+     */
     @Override
-    public String generateLing( Long docId, LinkType linkType ) {
+    public String generateLink( Long docId, LinkType linkType ) {
 
         String hash = hashids.encode( docId );
         return "http://" + linkAddress + linkType + "?id=" + hash;
     }
 
+    /**
+     * Retrieves the binary content of a file and saves it to the database.
+     *
+     * @param response The response from Telegram API containing file path.
+     * @return The saved BinaryContent entity.
+     */
     private BinaryContent getPersistentBinaryContent( ResponseEntity<String> response ) {
 
         String filePath = getFilePath( response );
@@ -109,6 +141,12 @@ public class DefaultFileService implements FileService {
         return binaryContentDAO.save( transientBinaryContent );
     }
 
+    /**
+     * Extracts the file path from the Telegram API response.
+     *
+     * @param response The response from Telegram API.
+     * @return The file path as a string.
+     */
     private static String getFilePath( ResponseEntity<String> response ) {
 
         JSONObject jsonObject = new JSONObject( response.getBody() );
@@ -120,6 +158,13 @@ public class DefaultFileService implements FileService {
         );
     }
 
+    /**
+     * Builds a transient AppDocument object from the Telegram document and its binary content.
+     *
+     * @param telegramDoc The Telegram Document object.
+     * @param persistentBinaryContent The BinaryContent entity containing the file data.
+     * @return A transient AppDocument object.
+     */
     private AppDocument buildTransientAppDoc( Document telegramDoc, BinaryContent persistentBinaryContent ) {
 
         return AppDocument.builder()
@@ -131,6 +176,13 @@ public class DefaultFileService implements FileService {
                 .build();
     }
 
+    /**
+     * Builds a transient AppPhoto object from the Telegram photo and its binary content.
+     *
+     * @param telegramPhoto The Telegram PhotoSize object.
+     * @param persistentBinaryContent The BinaryContent entity containing the file data.
+     * @return A transient AppPhoto object.
+     */
     private AppPhoto buildTransientAppPhoto( PhotoSize telegramPhoto, BinaryContent persistentBinaryContent ) {
 
         return AppPhoto.builder()
@@ -140,6 +192,12 @@ public class DefaultFileService implements FileService {
                 .build();
     }
 
+    /**
+     * Retrieves the file path from Telegram API using the fileId.
+     *
+     * @param fileId The file ID to get the file path.
+     * @return The response from the Telegram API containing the file path.
+     */
     private ResponseEntity<String> getFilePath( String fileId ) {
 
         RestTemplate restTemplate = new RestTemplate();
@@ -156,6 +214,12 @@ public class DefaultFileService implements FileService {
         );
     }
 
+    /**
+     * Downloads a file as a byte array from the provided file path.
+     *
+     * @param filePath The file path to download the file from.
+     * @return The binary data of the file as a byte array.
+     */
     private byte[] downloadFileInByte( String filePath ) {
 
         String fullUri = fileStorageUri

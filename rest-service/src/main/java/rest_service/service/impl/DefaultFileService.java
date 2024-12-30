@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 import rest_service.service.FileService;
 import rest_service.utils.Decoder;
 
+/**
+ * Service implementation for handling file-related operations.
+ * Provides methods for retrieving document and photo entities by their encoded identifiers.
+ */
 @Log4j
 @RequiredArgsConstructor
 @Service

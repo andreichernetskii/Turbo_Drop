@@ -11,5 +11,5 @@ public interface FileService {
 
     AppPhoto processPhoto( Message telegramMessage );
 
-    String generateLing( Long docId, LinkType linkType );
+    String generateLink( Long docId, LinkType linkType );
 }
