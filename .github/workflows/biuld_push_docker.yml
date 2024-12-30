@@ -47,13 +47,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build common module (if needed)
-        if: env.skip_build != 'true' && ${{ matrix.module }} != 'dispatcher'
-        run: mvn -B package -DskipTests=true -pl common -am
-
       - name: Build module
         if: env.skip_build != 'true'
-        run: mvn -B package -DskipTests=true -pl ${{ matrix.module }}
+        run: |
+          cd ${{ matrix.module }}
+          mvn clean package -DskipTests=true
 
       - name: Set up QEMU
         if: env.skip_build != 'true'
@@ -77,4 +75,4 @@ jobs:
           context: ./${{ matrix.module }}
           file: ./${{ matrix.module }}/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ matrix.module }}:latest
+          tags: orcxus/${{ matrix.module }}:latest
