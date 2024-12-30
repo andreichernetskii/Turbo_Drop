@@ -1,0 +1,78 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - "dispatcher/**"
+      - "mail-service/**"
+      - "node/**"
+      - "rest-service/**"
+      - "common/**"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module:
+          - dispatcher
+          - mail-service
+          - node
+          - rest-service
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Determine if module needs building
+        id: module-check
+        run: |
+          if ! git diff --name-only HEAD^ HEAD | grep -q "^${{ matrix.module }}/"; then
+            echo "skip_build=true" >> $GITHUB_ENV
+          fi
+
+      - name: Skip build if not needed
+        if: env.skip_build == 'true'
+        run: echo "No changes detected for ${{ matrix.module }}. Skipping build."
+
+      - name: Set up JDK 17
+        if: env.skip_build != 'true'
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build common module (if needed)
+        if: env.skip_build != 'true' && ${{ matrix.module }} != 'dispatcher'
+        run: mvn -B package -DskipTests=true -pl common -am
+
+      - name: Build module
+        if: env.skip_build != 'true'
+        run: mvn -B package -DskipTests=true -pl ${{ matrix.module }}
+
+      - name: Set up QEMU
+        if: env.skip_build != 'true'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        if: env.skip_build != 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: env.skip_build != 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        if: env.skip_build != 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.module }}
+          file: ./${{ matrix.module }}/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ matrix.module }}:latest
