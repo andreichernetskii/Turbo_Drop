@@ -28,19 +28,19 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v3
 
-      - name: Determine if module needs building
-        id: module-check
-        run: |
-          if ! git diff --name-only HEAD^ HEAD | grep -q "^${{ matrix.module }}/"; then
-            echo "skip_build=true" >> $GITHUB_ENV
-          fi
+  ##    - name: Determine if module needs building
+   ##     id: module-check
+  ##      run: |
+ ##         if ! git diff --name-only HEAD^ HEAD | grep -q "^${{ matrix.module }}/"; then
+  ##          echo "skip_build=true" >> $GITHUB_ENV
+  ##        fi
 
  ##    - name: Skip build if not needed
  ##       if: env.skip_build == 'true'
  ##       run: echo "No changes detected for ${{ matrix.module }}. Skipping build."
 
       - name: Set up JDK 17
-        if: env.skip_build != 'true'
+ ##       if: env.skip_build != 'true'
         uses: actions/setup-java@v3
         with:
           java-version: '17'
