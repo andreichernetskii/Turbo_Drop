@@ -22,7 +22,7 @@ import javax.persistence.Id;
 public class BinaryContent {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.IDENTITY )
+    @GeneratedValue( strategy = GenerationType.SEQUENCE )
     private Long id;
 
     private byte[] fileAsArrayOfBytes;

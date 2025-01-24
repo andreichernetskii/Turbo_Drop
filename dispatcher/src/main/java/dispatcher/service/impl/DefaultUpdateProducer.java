@@ -4,6 +4,7 @@ import dispatcher.service.UpdateProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -30,6 +31,7 @@ public class DefaultUpdateProducer implements UpdateProducer {
      * @param update      - the {@link Update} object containing data from Telegram. It may include
      *                      messages, commands, or other types of updates from chats.
      */
+    @Async
     @Override
     public void produce( String rabbitQueue, Update update ) {
 

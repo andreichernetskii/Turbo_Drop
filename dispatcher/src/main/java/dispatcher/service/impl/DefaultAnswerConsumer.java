@@ -4,6 +4,7 @@ import dispatcher.controller.UpdateProcessor;
 import dispatcher.service.AnswerConsumer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
@@ -28,6 +29,7 @@ public class DefaultAnswerConsumer implements AnswerConsumer {
      * @param sendMessage - the message to be sent, represented as a {@link SendMessage} object.
      *                      It contains details such as chat ID and the text to send.
      */
+    @Async
     @Override
     @RabbitListener( queues = "${spring.rabbitmq.queues.answer-message}" )
     public void consume( SendMessage sendMessage ) {

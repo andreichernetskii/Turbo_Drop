@@ -5,8 +5,11 @@ import lombok.extern.log4j.Log4j;
 import node.service.ConsumerService;
 import node.service.MainService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
+
+import java.util.List;
 
 /**
  * Implementation of the {@link ConsumerService} interface for consuming updates from RabbitMQ.
@@ -20,27 +23,41 @@ public class DefaultConsumerService implements ConsumerService {
 
     private final MainService mainService;
 
+    @Async
     @Override
-    @RabbitListener( queues = "${spring.rabbitmq.queues.text-message-update}" )
+    @RabbitListener( queues = "${spring.rabbitmq.queues.text-message-update}")
     public void consumeTextMessageUpdate( Update update ) {
 
-        log.debug( "NODE: Text message is received." );
-        mainService.processTextMessage( update );
+        try {
+            mainService.processTextMessage( update );
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
+    @Async
     @Override
-    @RabbitListener( queues = "${spring.rabbitmq.queues.doc-message-update}" )
-    public void consumeDocMessageUpdate( Update update ) {
+    @RabbitListener( queues = "${spring.rabbitmq.queues.doc-message-update}",
+            containerFactory = "rabbitListenerContainerFactory" )
+    public void consumeDocMessageUpdate( List<Update> updates ) {
 
-        log.debug( "NODE: Doc message is received." );
-        mainService.processDocMessage( update );
+        try {
+            mainService.processDocMessage( updates );
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
+    @Async
     @Override
-    @RabbitListener( queues = "${spring.rabbitmq.queues.photo-message-update}" )
-    public void consumePhotoMessageUpdate( Update update ) {
+    @RabbitListener( queues = "${spring.rabbitmq.queues.photo-message-update}",
+            containerFactory = "rabbitListenerContainerFactory" )
+    public void consumePhotoMessageUpdate( List<Update> updates ) {
 
-        log.debug( "NODE: Photo message is received." );
-        mainService.processPhotoMessage( update );
+        try {
+            mainService.processPhotoMessage( updates );
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 }
