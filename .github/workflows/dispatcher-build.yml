@@ -40,7 +40,7 @@ jobs:
       - name: Build container and push to Docker Hub
         uses: docker/build-push-action@v5
         with:
-          context: ./dispatcher
+          context: .
           file: ./dispatcher/Dockerfile
           push: true
           tags: orcxus/turbo_drop_dispatcher:latest
