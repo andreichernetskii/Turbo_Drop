@@ -23,7 +23,7 @@ jobs:
           cache: maven
 
       - name: Verify with Maven
-        run: mvn -B clean verify --file pom.xml 
+        run: mvn -B clean verify --file dispatcher/pom.xml 
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
