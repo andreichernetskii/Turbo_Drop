@@ -3,7 +3,7 @@ FROM maven:3.8-openjdk-17-slim
 ENV HOME=/home/app
 RUN mkdir -p $HOME
 
-COPY ./settings.xml /usr/share/maven/ref/
+COPY ../settings.xml /usr/share/maven/ref/
 ENV MVN_SETTINGS=/usr/share/maven/ref/settings.xml
 
 WORKDIR $HOME/dispatcher/
