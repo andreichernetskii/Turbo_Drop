@@ -54,5 +54,4 @@ public class RabbitConfig {
     public Queue answerMessageQueue() {
         return new Queue( answerMessageQueue );
     }
-
 }

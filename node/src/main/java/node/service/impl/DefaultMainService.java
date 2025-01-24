@@ -16,12 +16,14 @@ import node.service.MainService;
 import node.service.ProducerService;
 import node.service.enums.LinkType;
 import node.service.enums.ServiceCommands;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -51,11 +53,13 @@ public class DefaultMainService implements MainService {
      *
      * @param update The update object from Telegram containing the message.
      */
+    @Async
     @Transactional
     @Override
     public void processTextMessage( Update update ) {
 
         saveRawData( update );
+
 
         AppUser appUser = findOrSaveAppUser( update );
         UserState userState = appUser.getState();
@@ -78,35 +82,49 @@ public class DefaultMainService implements MainService {
         sendAnswer( output, chatId );
     }
 
+
+
     /**
      * Processes incoming document messages from users.
      * Checks if the user is allowed to send content and processes the document.
      * If successful, a download link is generated and sent to the user.
      *
-     * @param update The update object from Telegram containing the document message.
+     * @param updates The list of updates from Telegram containing the document message.
      */
+    @Async
     @Override
-    public void processDocMessage( Update update ) {
+    public void processDocMessage( List<Update> updates ) {
 
-        saveRawData( update );
+        saveRawData( updates );
 
-        AppUser appUser = findOrSaveAppUser( update );
-        Long chatId = update.getMessage().getChatId();
+        for (Update update : updates) {
 
-        if ( isNotAllowedToSendContent( chatId, appUser ) ) {
-            return;
+            AppUser appUser = findOrSaveAppUser( update );
+            Long chatId = update.getMessage().getChatId();
+
+            if ( isNotAllowedToSendContent( chatId, appUser ) ) {
+
+                log.debug("User " + chatId + " is not allowed to send content." );
+                return;
+            }
+
+            try {
+
+                AppDocument document = fileService.processDoc( update.getMessage() );
+                String link = fileService.generateLink( document.getId(), LinkType.GET_DOC );
+                String answer = "Document successfully loaded! Link for downloading: " + link;
+
+                sendAnswer( answer, chatId );
+
+            } catch ( UploadFileException exception ) {
+
+                log.error( exception );
+                String error = "Loading failed. Try again later.";
+
+                sendAnswer( error, chatId );
+            }
         }
 
-        try {
-            AppDocument document = fileService.processDoc( update.getMessage() );
-            String link = fileService.generateLink( document.getId(), LinkType.GET_DOC );
-            String answer = "Document successfully loaded! Link for downloading: " + link;
-            sendAnswer( answer, chatId );
-        } catch ( UploadFileException exception ) {
-            log.error( exception );
-            String error = "Loading failed. Try again later.";
-            sendAnswer( error, chatId );
-        }
     }
 
     /**
@@ -114,33 +132,39 @@ public class DefaultMainService implements MainService {
      * Checks if the user is allowed to send content and processes the photo.
      * If successful, a download link is generated and sent to the user.
      *
-     * @param update The update object from Telegram containing the photo message.
+     * @param updates The list of updates from Telegram containing the photo message.
      */
+    @Async
     @Override
-    public void processPhotoMessage( Update update ) {
+    public void processPhotoMessage( List<Update> updates ) {
 
-        saveRawData( update );
+        saveRawData( updates );
 
-        AppUser appUser = findOrSaveAppUser( update );
-        Long chatId = update.getMessage().getChatId();
+        for (Update update : updates) {
 
-        if ( isNotAllowedToSendContent( chatId, appUser ) ) {
-            return;
+            AppUser appUser = findOrSaveAppUser( update );
+            Long chatId = update.getMessage().getChatId();
+
+            if ( isNotAllowedToSendContent( chatId, appUser ) ) {
+                return;
+            }
+
+            try {
+
+                AppPhoto photo = fileService.processPhoto( update.getMessage() );
+                String link = fileService.generateLink( photo.getId(), LinkType.GET_PHOTO );
+                String answer = "Photo successfully loaded! Link for downloading: " + link;
+
+                sendAnswer( answer, chatId );
+
+            } catch ( UploadFileException exception ) {
+
+                log.error( exception );
+                String error = "Loading failed. Try again later.";
+
+                sendAnswer( error, chatId );
+            }
         }
-
-        try {
-            AppPhoto photo = fileService.processPhoto( update.getMessage() );
-            String link = fileService.generateLink( photo.getId(), LinkType.GET_PHOTO );
-            String answer = "Photo successfully loaded! Link for downloading: " + link;
-            ;
-            sendAnswer( answer, chatId );
-        } catch ( UploadFileException exception ) {
-            log.error( exception );
-            String error = "Loading failed. Try again later.";
-            sendAnswer( error, chatId );
-        }
-
-
     }
 
     /**
@@ -156,12 +180,19 @@ public class DefaultMainService implements MainService {
         UserState userState = appUser.getState();
 
         if ( !appUser.getIsActive() ) {
+
             String error = "Pls register or activate your account for loading content.";
+
             sendAnswer( error, chatId );
+
             return true;
+
         } else if ( !UserState.BASIC_STATE.equals( userState ) ) {
+
             String error = "Cancel current command with /cancel for sending content.";
+
             sendAnswer( error, chatId );
+
             return true;
         }
 
@@ -260,9 +291,18 @@ public class DefaultMainService implements MainService {
     /**
      * Saves the raw update data to the database for future reference.
      *
-     * @param update The update object to be saved.
+     * @param updates The update object to be saved.
      */
-    private void saveRawData( Update update ) {
+    private void saveRawData( List<Update> updates ) {
+
+        List<RawData> rawList = updates.stream()
+                .map(update -> RawData.builder().event(update).build())
+                .toList();
+
+        rawDataDAO.saveAll(rawList);
+    }
+
+    private void saveRawData(Update update) {
 
         RawData rawData = RawData.builder()
                 .event( update )
