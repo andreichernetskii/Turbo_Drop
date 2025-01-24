@@ -6,9 +6,9 @@ RUN mkdir -p $HOME
 COPY ./settings.xml /usr/share/maven/ref/
 ENV MVN_SETTINGS=/usr/share/maven/ref/settings.xml
 
-WORKDIR $HOME/dispatcher
-COPY ./dispatcher/pom.xml $HOME/dispatcher/
-COPY ./dispatcher/src $HOME/dispatcher/src
+WORKDIR $HOME/dispatcher/
+COPY ./pom.xml $HOME/dispatcher/
+COPY ./src $HOME/dispatcher/src
 
 RUN mvn -s $MVN_SETTINGS clean package -DskipTests --debug
 
