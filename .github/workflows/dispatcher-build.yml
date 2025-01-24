@@ -5,10 +5,6 @@ on:
     branches: [master]
     paths:
       - "dispatcher/**"
-    paths-ignore:
-      - "mail-service/**"
-      - "node/**"
-      - "rest-service/**"
 
   workflow_dispatch:
 
