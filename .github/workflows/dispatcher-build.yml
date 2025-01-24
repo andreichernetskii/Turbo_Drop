@@ -43,5 +43,5 @@ jobs:
           context: ./dispatcher
           file: ./dispatcher/Dockerfile
           push: true
-          tags: orcxus/telegram_bot_dispatcher:latest
+          tags: orcxus/turbo_drop_dispatcher:latest
       
