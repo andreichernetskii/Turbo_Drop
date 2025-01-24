@@ -35,9 +35,9 @@ jobs:
             echo "skip_build=true" >> $GITHUB_ENV
           fi
 
-      - name: Skip build if not needed
-        if: env.skip_build == 'true'
-        run: echo "No changes detected for ${{ matrix.module }}. Skipping build."
+ ##    - name: Skip build if not needed
+ ##       if: env.skip_build == 'true'
+ ##       run: echo "No changes detected for ${{ matrix.module }}. Skipping build."
 
       - name: Set up JDK 17
         if: env.skip_build != 'true'
