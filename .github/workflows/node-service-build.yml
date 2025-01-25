@@ -41,6 +41,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./dispatcher/Dockerfile
+          file: ./node/Dockerfile
           push: true
-          tags: orcxus/turbo_drop_dispatcher:latest
+          tags: orcxus/turbo_drop_node:latest
