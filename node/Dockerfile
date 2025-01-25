@@ -15,6 +15,6 @@ RUN mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=
 RUN mkdir -p $HOME/node
 ADD ./node/pom.xml $HOME/node/
 ADD ./node/src $HOME/node/src
-RUN mvn -f $HOME/node/pom.xml -s $MVN_SETTINGS clean package -DskipTests -- debug
+RUN mvn -f $HOME/node/pom.xml -s $MVN_SETTINGS clean package -DskipTests --debug
 
 CMD ["java", "-jar", "/home/app/node/target/node-1.0-SNAPSHOT.jar"]
