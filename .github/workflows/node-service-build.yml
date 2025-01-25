@@ -22,7 +22,10 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Verify with Maven
+      - name: Verify Common Module
+        run: mvn -B clean verify --file common/pom.xml
+      
+      - name: Verify node with Maven
         run: mvn -B clean verify --file node/pom.xml 
 
       - name: Set up QEMU
