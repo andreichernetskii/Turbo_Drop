@@ -43,4 +43,4 @@ jobs:
           context: .
           file: ./node/Dockerfile
           push: true
-          tags: orcxus/turbo_drop_node:latest
+          tags: orcxus/turbo_drop_node_service:latest
