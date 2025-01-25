@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - "node/**"
+      - "common/**"
 
   workflow_dispatch:
 
