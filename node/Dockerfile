@@ -10,7 +10,7 @@ RUN mkdir -p $HOME/common
 ADD ./common $HOME/common/
 
 RUN mvn -f $HOME/common/pom.xml -s $MVN_SETTINGS clean package -DskipTests
-RUN mvn org.apache.maven.plagins:maven-install-plugin:2.5.2:install-file -Dfile=$HOME/common/target/common-1.0-SNAPSHOT.jar -DskipTests --debug
+RUN mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=$HOME/common/target/common-1.0-SNAPSHOT.jar -DskipTests --debug
 
 RUN mkdir -p $HOME/node
 ADD ./node/pom.xml $HOME/node/
