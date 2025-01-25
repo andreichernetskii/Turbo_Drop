@@ -1,0 +1,25 @@
+name: Trigger all services jobs when common module is changed
+
+on:
+  push:
+    branches: [master]
+    paths:
+      -"common/**"
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+        
+      - name: Run Node-service Build
+        uses: ./.github/workflows/node-service-build.yml
+
+      - name: Run Mail-service Build
+        uses: ./.github/workflows/mail-service-build.yml
+
+      - name: Run Rest-service Build
+        uses: ./.github/workflows/rest-service-build.yml
