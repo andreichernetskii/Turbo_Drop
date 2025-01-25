@@ -1,27 +1,21 @@
 FROM maven:3.8-openjdk-17-slim
 
 ENV HOME=/home/app
-WORKDIR $HOME
+RUN mkdir -p $HOME
 
-COPY ./settings.xml /usr/share/maven/ref/
+ADD ./settings.xml /usr/share/maven/ref/
 ENV MVN_SETTINGS=/usr/share/maven/ref/settings.xml
 
-WORKDIR $HOME/common
+RUN mkdir -p $HOME/common
+ADD ./common $HOME/common
 
-COPY ./common/pom.xml $HOME/common/
-RUN mvn -s $MVN_SETTINGS clean package -DskipTests
+RUN mvn -f $HOME/common/pom.xml -s $MVN_SETTINGS clean package
+RUN mvn org.apache.maven.plugins:maven-install-plugin:2.5.2:install-file -Dfile=$HOME/common/target/common-1.0-SNAPSHOT.jar --debug
 
-RUN mvn instal:instal-file \
-    -Dfile=$HOME/common/target/common-1.0-SNAPSHOT.jar \
-    -DgroupId=com.example \
-    -DartifactId=common \
-    -Dversion=1.0-SNAPSHOT \
-    -Dpackaging=jar
+RUN mkdir -p $HOME/rest-service
+ADD ./rest-service/pom.xml $HOME/rest-service
+ADD ./rest-service/src $HOME/rest-service/src
 
-WORKDIR $HOME/node
-COPY ./rest-service/pom.xml $HOME/rest-service/
-COPY ./rest-service/src $HOME/rest-service/src
-
-RUN mvn -s $MVN_SETTINGS clean package -DskipTests --debug
+RUN mvn -f $HOME/rest-service/pom.xml -s $MVN_SETTINGS clean package --debug
 
 CMD ["java", "-jar", "/home/app/rest-service/target/rest-service-1.0-SNAPSHOT.jar"]
