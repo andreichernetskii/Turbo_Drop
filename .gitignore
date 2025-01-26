@@ -3,6 +3,7 @@ application.yaml
 .gitignore
 logs/
 .idea
+.sh
 
 target/
 !.mvn/wrapper/maven-wrapper.jar
