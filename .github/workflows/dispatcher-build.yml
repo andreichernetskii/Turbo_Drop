@@ -1,11 +1,6 @@
 name: Build Dispatcher
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - "dispatcher/**"
-
   workflow_dispatch:
 
 jobs:
