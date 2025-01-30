@@ -18,4 +18,5 @@ ADD ./rest-service/src $HOME/rest-service/src
 
 RUN mvn -f $HOME/rest-service/pom.xml -s $MVN_SETTINGS clean package --debug
 
+EXPOSE 8086
 CMD ["java", "-jar", "/home/app/rest-service/target/rest-service-1.0-SNAPSHOT.jar"]

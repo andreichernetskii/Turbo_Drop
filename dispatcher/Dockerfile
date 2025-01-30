@@ -12,4 +12,5 @@ ADD ./dispatcher/src $HOME/dispatcher/src
 
 RUN mvn -f $HOME/dispatcher/pom.xml -s $MVN_SETTINGS clean package -DskipTests --debug
 
+EXPOSE 8089
 CMD ["java", "-jar", "/home/app/dispatcher/target/dispatcher-1.0-SNAPSHOT.jar"]

@@ -279,7 +279,7 @@ public class DefaultMainService implements MainService {
                     .firstName( telegramUser.getFirstName() )
                     .lastName( telegramUser.getLastName() )
                     .isActive( false )
-                    .state( UserState.BASIC_STATE )
+                    .state( UserState.WAIT_FOR_EMAIL_STATE )
                     .build();
 
             return appUserDAO.save( transientUser );
