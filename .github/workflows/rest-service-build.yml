@@ -1,12 +1,6 @@
 name: Build Rest Service Module
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - "rest-service/**"
-      - "common/**"
-
   workflow_dispatch:
 
 jobs:
