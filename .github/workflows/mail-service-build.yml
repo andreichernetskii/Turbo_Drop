@@ -1,12 +1,6 @@
 name: Build Mail Service Module
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - "mail-service/**"
-      - "common/**"
-
   workflow_dispatch:
 
 jobs:
