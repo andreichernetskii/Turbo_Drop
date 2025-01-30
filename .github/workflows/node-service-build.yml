@@ -1,12 +1,6 @@
 name: Build Node Service
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - "node/**"
-      - "common/**"
-
   workflow_dispatch:
 
 jobs:
