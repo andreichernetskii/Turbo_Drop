@@ -3,7 +3,18 @@
 ### Project Description
 A Telegram bot designed for saving files to a remote database and generating download links for specified photos or documents.
 
+### How to use
+Find `@turbo_skrytka_bot` in the Telegram App and press the start button.
+
 ### Application Workflow
+
+_Workflow schema_
+<div style="text-align:center;">
+  <img src="https://github.com/user-attachments/assets/ab925537-45cd-4755-8665-39876a1cc0d6"
+  width="700" title="workflow-schema" />
+</div>
+
+
 #### 1. Bot Startup
 The user launches the bot. By using the `/help` command, the user receives a list of available commands.
 
