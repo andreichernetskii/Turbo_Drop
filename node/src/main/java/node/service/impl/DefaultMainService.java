@@ -4,6 +4,7 @@ import common.dao.AppUserDAO;
 import common.entity.AppDocument;
 import common.entity.AppPhoto;
 import common.entity.AppUser;
+import common.entity.enums.UserActiveProcess;
 import common.entity.enums.UserState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -16,10 +17,14 @@ import node.service.MainService;
 import node.service.ProducerService;
 import node.service.enums.LinkType;
 import node.service.enums.ServiceCommands;
+import node.utils.Decoder;
+import node.utils.FileValidator;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.telegram.telegrambots.meta.api.interfaces.BotApiObject;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
@@ -60,26 +65,21 @@ public class DefaultMainService implements MainService {
 
         saveRawData( update );
 
-
         AppUser appUser = findOrSaveAppUser( update );
-        UserState userState = appUser.getState();
         String text = update.getMessage().getText();
-        String output = "";
         ServiceCommands serviceCommand = ServiceCommands.fromValue( text );
+        StringBuilder output = new StringBuilder();
 
-        if ( ServiceCommands.CANCEL.equals( serviceCommand ) ) {
-            output = cancelProcess( appUser );
-        } else if ( UserState.BASIC_STATE.equals( userState ) ) {
-            output = processServiceCommand( appUser, serviceCommand );
-        } else if ( UserState.WAIT_FOR_EMAIL_STATE.equals( userState ) ) {
-            output = appUserService.setEmail( appUser, text );
+        if (ServiceCommands.CANCEL.equals(serviceCommand)) {
+            output.append(cancelProcess(appUser));
+        } else if (appUser.getUserActiveProcess().equals(UserActiveProcess.REGISTRATION_IN_PROCESS)) {
+            output.append(appUserService.setEmail(appUser, text));
         } else {
-            log.error( "Unknown user state!" );
-            output = "Unknown error! Provide command /cancel and try again.";
+            output.append(processServiceCommand(appUser, serviceCommand));
         }
 
         Long chatId = update.getMessage().getChatId();
-        sendAnswer( output, chatId );
+        sendAnswer( output.toString(), chatId );
     }
 
 
@@ -100,10 +100,11 @@ public class DefaultMainService implements MainService {
         for (Update update : updates) {
 
             AppUser appUser = findOrSaveAppUser( update );
-            Long chatId = update.getMessage().getChatId();
+            Message message = update.getMessage();
+            Long chatId = message.getChatId();
+            long docSize = message.getDocument().getFileSize();
 
-            if ( isNotAllowedToSendContent( chatId, appUser ) ) {
-
+            if ( isNotAllowedToSendContent( chatId, appUser, docSize ) ) {
                 log.debug("User " + chatId + " is not allowed to send content." );
                 return;
             }
@@ -113,6 +114,11 @@ public class DefaultMainService implements MainService {
                 AppDocument document = fileService.processDoc( update.getMessage() );
                 String link = fileService.generateLink( document.getId(), LinkType.GET_DOC );
                 String answer = "Document successfully loaded! Link for downloading: " + link;
+
+                if (UserState.DEMO_STATE.equals(appUser.getState())) {
+                    appUser.setIsDemoLimitExpired(true);
+                    appUserDAO.save(appUser);
+                }
 
                 sendAnswer( answer, chatId );
 
@@ -143,9 +149,14 @@ public class DefaultMainService implements MainService {
         for (Update update : updates) {
 
             AppUser appUser = findOrSaveAppUser( update );
-            Long chatId = update.getMessage().getChatId();
+            Message message = update.getMessage();
+            Long chatId = message.getChatId();
+            int photoSizeCount = message.getPhoto().size();
+            int photoIndex = ( photoSizeCount > 1 ) ? message.getPhoto().size() - 1 : 0;
+            long photoSize = message.getPhoto().get(photoIndex).getFileSize();
 
-            if ( isNotAllowedToSendContent( chatId, appUser ) ) {
+            if ( isNotAllowedToSendContent( chatId, appUser, photoSize ) ) {
+                log.debug("User " + chatId + " is not allowed to send content." );
                 return;
             }
 
@@ -154,6 +165,11 @@ public class DefaultMainService implements MainService {
                 AppPhoto photo = fileService.processPhoto( update.getMessage() );
                 String link = fileService.generateLink( photo.getId(), LinkType.GET_PHOTO );
                 String answer = "Photo successfully loaded! Link for downloading: " + link;
+
+                if (UserState.DEMO_STATE.equals(appUser.getState())) {
+                    appUser.setIsDemoLimitExpired(true);
+                    appUserDAO.save(appUser);
+                }
 
                 sendAnswer( answer, chatId );
 
@@ -167,6 +183,12 @@ public class DefaultMainService implements MainService {
         }
     }
 
+    @Async
+    @Override
+    public void activateUser(String encryptedUserId) {
+        appUserService.activateUser(encryptedUserId);
+    }
+
     /**
      * Checks if the user is allowed to send content.
      * The user must be active and in the basic state to send content.
@@ -175,25 +197,29 @@ public class DefaultMainService implements MainService {
      * @param appUser The user object.
      * @return true if the user is not allowed to send content, false otherwise.
      */
-    private boolean isNotAllowedToSendContent( Long chatId, AppUser appUser ) {
+    private boolean isNotAllowedToSendContent( Long chatId, AppUser appUser, long docSize ) {
 
         UserState userState = appUser.getState();
 
-        if ( !appUser.getIsActive() ) {
+        if (UserState.DEMO_STATE.equals(userState)) {
 
-            String error = "Pls register or activate your account for loading content.";
+            if (appUser.getIsDemoLimitExpired()) {
+                String error = "The limits for the user in DEMO state have expired.\n" +
+                        "Please register your account to upload more content.";
 
-            sendAnswer( error, chatId );
+                sendAnswer(error, chatId);
 
-            return true;
+                return true;
+            }
 
-        } else if ( !UserState.BASIC_STATE.equals( userState ) ) {
+            if (!FileValidator.isFileSizeValid(docSize)) {
+                String error = "The file size exceeds the allowed limit (5MB).\n" +
+                        "Please register your account to upload larger files.";
 
-            String error = "Cancel current command with /cancel for sending content.";
+                sendAnswer(error, chatId);
 
-            sendAnswer( error, chatId );
-
-            return true;
+                return true;
+            }
         }
 
         return false;
@@ -224,14 +250,23 @@ public class DefaultMainService implements MainService {
      */
     private String processServiceCommand( AppUser appUser, ServiceCommands cmd ) {
 
-        if ( ServiceCommands.REGISTRATION.equals( cmd ) ) {
+        StringBuilder strAnswer = new StringBuilder();
+
+        if ( ServiceCommands.START.equals( cmd ) ) {
+            strAnswer.append("Greetings! Type /help for showing a list of commands.");
+            if (appUser.getState().equals(UserState.DEMO_STATE)) {
+                strAnswer.append(
+                        "\nYour current state is DEMO. You are able to send one document " +
+                                "or photo with a maximum size of 5MB."
+                );
+            }
+            return strAnswer.toString();
+        } else if (ServiceCommands.REGISTRATION.equals(cmd)) {
             return appUserService.registerUser( appUser );
-        } else if ( ServiceCommands.HELP.equals( cmd ) ) {
+        } else if (ServiceCommands.HELP.equals( cmd )) {
             return help();
-        } else if ( ServiceCommands.START.equals( cmd ) ) {
-            return "Greetings! Type /help for showing a list of commands.";
         } else {
-            return "Unknown command!";
+            return strAnswer.append("Unknown command!").toString();
         }
     }
 
@@ -243,19 +278,19 @@ public class DefaultMainService implements MainService {
     private String help() {
 
         return "List of commands:\n" +
-                "/cancel - cancel the current command;\n" +
+                "/cancel - cancel the current process;\n" +
                 "/registration - user registration";
     }
 
     /**
-     * Cancels the current process for the user and sets their state to BASIC_STATE.
+     * Cancels the current process for the user and sets their active process to NONE.
      *
      * @param appUser The user object.
      * @return The confirmation message for the user.
      */
     private String cancelProcess( AppUser appUser ) {
 
-        appUser.setState( UserState.BASIC_STATE );
+        appUser.setUserActiveProcess(UserActiveProcess.NONE);
         appUserDAO.save( appUser );
 
         return "Command canceled!";
@@ -279,7 +314,9 @@ public class DefaultMainService implements MainService {
                     .firstName( telegramUser.getFirstName() )
                     .lastName( telegramUser.getLastName() )
                     .isActive( false )
-                    .state( UserState.WAIT_FOR_EMAIL_STATE )
+                    .isDemoLimitExpired(false)
+                    .state( UserState.DEMO_STATE)
+                    .userActiveProcess(UserActiveProcess.NONE)
                     .build();
 
             return appUserDAO.save( transientUser );

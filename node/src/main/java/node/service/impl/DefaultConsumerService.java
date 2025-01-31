@@ -2,6 +2,7 @@ package node.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
+import node.service.AppUserService;
 import node.service.ConsumerService;
 import node.service.MainService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -57,6 +58,19 @@ public class DefaultConsumerService implements ConsumerService {
 
         try {
             mainService.processPhotoMessage( updates );
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    @Async
+    @Override
+    @RabbitListener( queues = "${spring.rabbitmq.queues.mail-confirmed-message-update}",
+            containerFactory = "rabbitSingleMessageListenerContainerFactory" )
+    public void consumeMailConfirmedMessage(String encryptedUserId) {
+
+        try {
+            mainService.activateUser(encryptedUserId);
         } catch (Exception e) {
             log.error(e.getMessage());
         }

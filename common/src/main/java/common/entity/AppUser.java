@@ -1,5 +1,6 @@
 package common.entity;
 
+import common.entity.enums.UserActiveProcess;
 import common.entity.enums.UserState;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -47,6 +48,11 @@ public class AppUser {
 
     private Boolean isActive;
 
+    private Boolean isDemoLimitExpired;
+
     @Enumerated( EnumType.STRING )
     private UserState state;
+
+    @Enumerated(EnumType.STRING)
+    private UserActiveProcess userActiveProcess;
 }

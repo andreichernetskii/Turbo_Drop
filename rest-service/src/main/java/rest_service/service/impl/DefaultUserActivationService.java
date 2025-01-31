@@ -1,13 +1,10 @@
 package rest_service.service.impl;
 
-import common.dao.AppUserDAO;
-import common.entity.AppUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import rest_service.configuration.RabbitConfig;
+import rest_service.service.MailConfirmedProducer;
 import rest_service.service.UserActivationService;
-import rest_service.utils.Decoder;
-
-import java.util.Optional;
 
 /**
  * Service implementation for activating user accounts.
@@ -17,30 +14,20 @@ import java.util.Optional;
 @Service
 public class DefaultUserActivationService implements UserActivationService {
 
-    private final AppUserDAO appUserDAO;
+    private final MailConfirmedProducer mailConfirmedProducer;
 
-    private final Decoder decoder;
+    private final RabbitConfig rabbitConfig;
 
     /**
-     * Activates a user account based on the provided encrypted user ID.
-     * Decodes the encrypted ID, retrieves the corresponding user entity, and marks it as active.
+     * Sends an encrypted user ID to a queue for user activation.
      *
-     * @param cryptoUserId The encrypted user ID.
-     * @return {@code true} if the user was successfully activated; {@code false} otherwise (e.g., user not found).
+     * This method receives an encrypted user ID, and sends it to a RabbitMQ queue for further
+     * processing, where the user will be activated.
+     *
+     * @param encryptedUserId The encrypted user ID to be sent for activation.
      */
     @Override
-    public boolean activation( String cryptoUserId ) {
-
-        Long userId = decoder.idOf( cryptoUserId );
-        Optional<AppUser> optionalAppUser = appUserDAO.findById( userId );
-
-        if ( optionalAppUser.isPresent() ) {
-            AppUser appUser = optionalAppUser.get();
-            appUser.setIsActive( true );
-            appUserDAO.save( appUser );
-
-            return true;
-        }
-        return false;
+    public void activation( String encryptedUserId ) {
+        mailConfirmedProducer.produce(rabbitConfig.getMailConfirmedMessageUpdateQueue(), encryptedUserId);
     }
 }

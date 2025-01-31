@@ -30,8 +30,8 @@ public class ActivationController {
     @GetMapping( "/activation" )
     public ResponseEntity<?> activation( @RequestParam( "id" ) String id ) {
 
-        return (userActivationService.activation( id ))
-                ? ResponseEntity.ok().body("Registration finished successful.")
-                : ResponseEntity.internalServerError().build();
+        userActivationService.activation(id);
+
+        return ResponseEntity.ok().body("Registration finished successful.");
     }
 }
