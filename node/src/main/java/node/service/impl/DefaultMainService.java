@@ -302,6 +302,11 @@ public class DefaultMainService implements MainService {
         rawDataDAO.saveAll(rawList);
     }
 
+    /**
+     * Saves the raw update data to the database for future reference.
+     *
+     * @param update The update object to be saved.
+     */
     private void saveRawData(Update update) {
 
         RawData rawData = RawData.builder()
