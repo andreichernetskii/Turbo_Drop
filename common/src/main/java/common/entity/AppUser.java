@@ -48,6 +48,8 @@ public class AppUser {
 
     private Boolean isActive;
 
+    private Boolean isDemoLimitExpired;
+
     @Enumerated( EnumType.STRING )
     private UserState state;
 

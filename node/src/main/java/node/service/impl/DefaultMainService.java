@@ -18,10 +18,13 @@ import node.service.ProducerService;
 import node.service.enums.LinkType;
 import node.service.enums.ServiceCommands;
 import node.utils.Decoder;
+import node.utils.FileValidator;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.telegram.telegrambots.meta.api.interfaces.BotApiObject;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
@@ -97,10 +100,11 @@ public class DefaultMainService implements MainService {
         for (Update update : updates) {
 
             AppUser appUser = findOrSaveAppUser( update );
-            Long chatId = update.getMessage().getChatId();
+            Message message = update.getMessage();
+            Long chatId = message.getChatId();
+            long docSize = message.getDocument().getFileSize();
 
-            if ( isNotAllowedToSendContent( chatId, appUser ) ) {
-
+            if ( isNotAllowedToSendContent( chatId, appUser, docSize ) ) {
                 log.debug("User " + chatId + " is not allowed to send content." );
                 return;
             }
@@ -110,6 +114,11 @@ public class DefaultMainService implements MainService {
                 AppDocument document = fileService.processDoc( update.getMessage() );
                 String link = fileService.generateLink( document.getId(), LinkType.GET_DOC );
                 String answer = "Document successfully loaded! Link for downloading: " + link;
+
+                if (UserState.DEMO_STATE.equals(appUser.getState())) {
+                    appUser.setIsDemoLimitExpired(true);
+                    appUserDAO.save(appUser);
+                }
 
                 sendAnswer( answer, chatId );
 
@@ -140,9 +149,14 @@ public class DefaultMainService implements MainService {
         for (Update update : updates) {
 
             AppUser appUser = findOrSaveAppUser( update );
-            Long chatId = update.getMessage().getChatId();
+            Message message = update.getMessage();
+            Long chatId = message.getChatId();
+            int photoSizeCount = message.getPhoto().size();
+            int photoIndex = ( photoSizeCount > 1 ) ? message.getPhoto().size() - 1 : 0;
+            long photoSize = message.getPhoto().get(photoIndex).getFileSize();
 
-            if ( isNotAllowedToSendContent( chatId, appUser ) ) {
+            if ( isNotAllowedToSendContent( chatId, appUser, photoSize ) ) {
+                log.debug("User " + chatId + " is not allowed to send content." );
                 return;
             }
 
@@ -151,6 +165,11 @@ public class DefaultMainService implements MainService {
                 AppPhoto photo = fileService.processPhoto( update.getMessage() );
                 String link = fileService.generateLink( photo.getId(), LinkType.GET_PHOTO );
                 String answer = "Photo successfully loaded! Link for downloading: " + link;
+
+                if (UserState.DEMO_STATE.equals(appUser.getState())) {
+                    appUser.setIsDemoLimitExpired(true);
+                    appUserDAO.save(appUser);
+                }
 
                 sendAnswer( answer, chatId );
 
@@ -178,25 +197,29 @@ public class DefaultMainService implements MainService {
      * @param appUser The user object.
      * @return true if the user is not allowed to send content, false otherwise.
      */
-    private boolean isNotAllowedToSendContent( Long chatId, AppUser appUser ) {
+    private boolean isNotAllowedToSendContent( Long chatId, AppUser appUser, long docSize ) {
 
         UserState userState = appUser.getState();
 
-        if ( !appUser.getIsActive() ) {
+        if (UserState.DEMO_STATE.equals(userState)) {
 
-            String error = "Pls register or activate your account for loading content.";
+            if (appUser.getIsDemoLimitExpired()) {
+                String error = "The limits for the user in DEMO state have expired.\n" +
+                        "Please register your account to upload more content.";
 
-            sendAnswer( error, chatId );
+                sendAnswer(error, chatId);
 
-            return true;
+                return true;
+            }
 
-        } else if ( !UserState.BASIC_STATE.equals( userState ) ) {
+            if (!FileValidator.isFileSizeValid(docSize)) {
+                String error = "The file size exceeds the allowed limit (5MB).\n" +
+                        "Please register your account to upload larger files.";
 
-            String error = "Cancel current command with /cancel for sending content.";
+                sendAnswer(error, chatId);
 
-            sendAnswer( error, chatId );
-
-            return true;
+                return true;
+            }
         }
 
         return false;
@@ -291,6 +314,7 @@ public class DefaultMainService implements MainService {
                     .firstName( telegramUser.getFirstName() )
                     .lastName( telegramUser.getLastName() )
                     .isActive( false )
+                    .isDemoLimitExpired(false)
                     .state( UserState.DEMO_STATE)
                     .userActiveProcess(UserActiveProcess.NONE)
                     .build();

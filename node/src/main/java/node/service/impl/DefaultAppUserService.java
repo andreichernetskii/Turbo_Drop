@@ -83,7 +83,6 @@ public class DefaultAppUserService implements AppUserService {
 
         if ( optionalAppUser.isEmpty() ) {
             appUser.setEmail( email );
-//            appUser.setState( UserState.BASIC_STATE );
             appUser = appUserDAO.save( appUser );
 
             String cryptoUserId = hashids.encode( appUser.getId() );
@@ -109,6 +108,7 @@ public class DefaultAppUserService implements AppUserService {
             AppUser appUser = optionalAppUser.get();
             appUser.setUserActiveProcess(UserActiveProcess.NONE);
             appUser.setIsActive(true);
+            appUser.setIsDemoLimitExpired(false);
             appUser.setState(UserState.BASIC_STATE);
 
             appUserDAO.save(appUser);
