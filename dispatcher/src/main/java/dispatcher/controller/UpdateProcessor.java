@@ -5,10 +5,15 @@ import dispatcher.service.UpdateProducer;
 import dispatcher.utils.MessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -24,6 +29,7 @@ import java.util.function.Predicate;
 @Log4j
 @Component
 public class UpdateProcessor {
+
     private TelegramBot telegramBot;
 
     private final MessageUtils messageUtils;
@@ -40,6 +46,27 @@ public class UpdateProcessor {
      */
     public void registerBot( TelegramBot telegramBot ) {
         this.telegramBot = telegramBot;
+    }
+
+    /**
+     * Initializes and registers the bot instance with Telegram API.
+     * This method is triggered when the application context is refreshed.
+     *
+     * It ensures that the bot is properly registered to handle incoming updates.
+     * Any exceptions during the registration process are logged as errors.
+     */
+    @EventListener({ContextRefreshedEvent.class})
+    public void initBot() {
+
+        try {
+
+            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
+            telegramBotsApi.registerBot(telegramBot);
+
+        } catch (TelegramApiException e) {
+
+            log.error(e);
+        }
     }
 
     /**
@@ -93,12 +120,15 @@ public class UpdateProcessor {
 
         // Process the message by finding the first matching processor
         messageProcessor.entrySet().stream()
-                .filter( entry -> entry.getKey().test( message )) // Filter by message type condition
+                // Filter by message type condition
+                .filter( entry -> entry.getKey().test( message ))
                 // Get the first matching processor
                 .findFirst()
                 .ifPresentOrElse(
-                        entry -> entry.getValue().accept( update ), // If found, call the corresponding method
-                        () -> setUnsupportedMessageType( update ) // If no match, handle unsupported message type
+                        // If found, call the corresponding method
+                        entry -> entry.getValue().accept( update ),
+                        // If no match, handle unsupported message type
+                        () -> setUnsupportedMessageType( update )
                 );
     }
 
