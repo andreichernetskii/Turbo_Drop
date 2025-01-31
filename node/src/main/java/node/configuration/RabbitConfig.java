@@ -53,7 +53,7 @@ public class RabbitConfig {
      * @return an instance of {@link SimpleRabbitListenerContainerFactory} configured for batch processing.
      */
     @Bean
-    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
+    public SimpleRabbitListenerContainerFactory rabbitBatchListenerContainerFactory(ConnectionFactory connectionFactory) {
 
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
 
@@ -65,4 +65,19 @@ public class RabbitConfig {
 
         return factory;
     }
+
+    @Bean
+    public SimpleRabbitListenerContainerFactory rabbitSingleMessageListenerContainerFactory(ConnectionFactory connectionFactory) {
+
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(jsonMessageConverter());
+        factory.setBatchListener(false);
+        factory.setConsumerBatchEnabled(false);
+
+        return factory;
+    }
+
+
 }

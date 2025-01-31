@@ -25,7 +25,8 @@ public class DefaultConsumerService implements ConsumerService {
 
     @Async
     @Override
-    @RabbitListener( queues = "${spring.rabbitmq.queues.text-message-update}")
+    @RabbitListener( queues = "${spring.rabbitmq.queues.text-message-update}",
+            containerFactory = "rabbitSingleMessageListenerContainerFactory")
     public void consumeTextMessageUpdate( Update update ) {
 
         try {
@@ -38,7 +39,7 @@ public class DefaultConsumerService implements ConsumerService {
     @Async
     @Override
     @RabbitListener( queues = "${spring.rabbitmq.queues.doc-message-update}",
-            containerFactory = "rabbitListenerContainerFactory" )
+            containerFactory = "rabbitBatchListenerContainerFactory" )
     public void consumeDocMessageUpdate( List<Update> updates ) {
 
         try {
@@ -51,7 +52,7 @@ public class DefaultConsumerService implements ConsumerService {
     @Async
     @Override
     @RabbitListener( queues = "${spring.rabbitmq.queues.photo-message-update}",
-            containerFactory = "rabbitListenerContainerFactory" )
+            containerFactory = "rabbitBatchListenerContainerFactory" )
     public void consumePhotoMessageUpdate( List<Update> updates ) {
 
         try {

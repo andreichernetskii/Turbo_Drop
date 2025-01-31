@@ -1,21 +1,21 @@
 package node.entity;
 
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 
 
 @Getter
@@ -24,7 +24,7 @@ import javax.persistence.Id;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@TypeDef( name = "jsonb", typeClass = JsonBinaryType.class )
+@Convert(attributeName = "jsonb", converter = JsonBinaryType.class)
 @Entity
 public class RawData {
 
@@ -32,7 +32,7 @@ public class RawData {
     @GeneratedValue( strategy = GenerationType.SEQUENCE )
     private Long id;
 
-    @Type( type = "jsonb" )
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column( columnDefinition = "jsonb" )
     private Update event;
 }

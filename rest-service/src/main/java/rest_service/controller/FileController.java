@@ -3,6 +3,8 @@ package rest_service.controller;
 import common.entity.AppDocument;
 import common.entity.AppPhoto;
 import common.entity.BinaryContent;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.http.MediaType;
@@ -12,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import rest_service.service.FileService;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
