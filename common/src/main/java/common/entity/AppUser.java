@@ -1,5 +1,6 @@
 package common.entity;
 
+import common.entity.enums.UserActiveProcess;
 import common.entity.enums.UserState;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -49,4 +50,7 @@ public class AppUser {
 
     @Enumerated( EnumType.STRING )
     private UserState state;
+
+    @Enumerated(EnumType.STRING)
+    private UserActiveProcess userActiveProcess;
 }

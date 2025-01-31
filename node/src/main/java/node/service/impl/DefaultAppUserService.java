@@ -2,6 +2,7 @@ package node.service.impl;
 
 import common.dao.AppUserDAO;
 import common.entity.AppUser;
+import common.entity.enums.UserActiveProcess;
 import common.entity.enums.UserState;
 import common.dto.MailParams;
 import lombok.RequiredArgsConstructor;
@@ -52,10 +53,10 @@ public class DefaultAppUserService implements AppUserService {
                     "Follow the link in the letter to confirm your registration.";
         }
 
-        appUser.setState( UserState.WAIT_FOR_EMAIL_STATE );
+        appUser.setUserActiveProcess(UserActiveProcess.REGISTRATION_IN_PROCESS);
         appUserDAO.save( appUser );
 
-        return "Please enter your email";
+        return "Registration process is started.\nPlease enter your email";
     }
 
     /**
@@ -79,7 +80,7 @@ public class DefaultAppUserService implements AppUserService {
 
         if ( optionalAppUser.isEmpty() ) {
             appUser.setEmail( email );
-            appUser.setState( UserState.BASIC_STATE );
+//            appUser.setState( UserState.BASIC_STATE );
             appUser = appUserDAO.save( appUser );
 
             String cryptoUserId = hashids.encode( appUser.getId() );

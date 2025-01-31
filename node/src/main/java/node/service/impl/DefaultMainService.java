@@ -4,6 +4,7 @@ import common.dao.AppUserDAO;
 import common.entity.AppDocument;
 import common.entity.AppPhoto;
 import common.entity.AppUser;
+import common.entity.enums.UserActiveProcess;
 import common.entity.enums.UserState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -60,26 +61,21 @@ public class DefaultMainService implements MainService {
 
         saveRawData( update );
 
-
         AppUser appUser = findOrSaveAppUser( update );
-        UserState userState = appUser.getState();
         String text = update.getMessage().getText();
-        String output = "";
         ServiceCommands serviceCommand = ServiceCommands.fromValue( text );
+        StringBuilder output = new StringBuilder();
 
-        if ( ServiceCommands.CANCEL.equals( serviceCommand ) ) {
-            output = cancelProcess( appUser );
-        } else if ( UserState.BASIC_STATE.equals( userState ) ) {
-            output = processServiceCommand( appUser, serviceCommand );
-        } else if ( UserState.WAIT_FOR_EMAIL_STATE.equals( userState ) ) {
-            output = appUserService.setEmail( appUser, text );
+        if (ServiceCommands.CANCEL.equals(serviceCommand)) {
+            output.append(cancelProcess(appUser));
+        } else if (appUser.getUserActiveProcess().equals(UserActiveProcess.REGISTRATION_IN_PROCESS)) {
+            output.append(appUserService.setEmail(appUser, text));
         } else {
-            log.error( "Unknown user state!" );
-            output = "Unknown error! Provide command /cancel and try again.";
+            output.append(processServiceCommand(appUser, serviceCommand));
         }
 
         Long chatId = update.getMessage().getChatId();
-        sendAnswer( output, chatId );
+        sendAnswer( output.toString(), chatId );
     }
 
 
@@ -224,14 +220,23 @@ public class DefaultMainService implements MainService {
      */
     private String processServiceCommand( AppUser appUser, ServiceCommands cmd ) {
 
-        if ( ServiceCommands.REGISTRATION.equals( cmd ) ) {
+        StringBuilder strAnswer = new StringBuilder();
+
+        if ( ServiceCommands.START.equals( cmd ) ) {
+            strAnswer.append("Greetings! Type /help for showing a list of commands.");
+            if (appUser.getState().equals(UserState.DEMO_STATE)) {
+                strAnswer.append(
+                        "\nYour current state is DEMO. You are able to send one document " +
+                                "or photo with a maximum size of 5MB."
+                );
+            }
+            return strAnswer.toString();
+        } else if (ServiceCommands.REGISTRATION.equals(cmd)) {
             return appUserService.registerUser( appUser );
-        } else if ( ServiceCommands.HELP.equals( cmd ) ) {
+        } else if (ServiceCommands.HELP.equals( cmd )) {
             return help();
-        } else if ( ServiceCommands.START.equals( cmd ) ) {
-            return "Greetings! Type /help for showing a list of commands.";
         } else {
-            return "Unknown command!";
+            return strAnswer.append("Unknown command!").toString();
         }
     }
 
@@ -243,19 +248,19 @@ public class DefaultMainService implements MainService {
     private String help() {
 
         return "List of commands:\n" +
-                "/cancel - cancel the current command;\n" +
+                "/cancel - cancel the current process;\n" +
                 "/registration - user registration";
     }
 
     /**
-     * Cancels the current process for the user and sets their state to BASIC_STATE.
+     * Cancels the current process for the user and sets their active process to NONE.
      *
      * @param appUser The user object.
      * @return The confirmation message for the user.
      */
     private String cancelProcess( AppUser appUser ) {
 
-        appUser.setState( UserState.BASIC_STATE );
+        appUser.setUserActiveProcess(UserActiveProcess.NONE);
         appUserDAO.save( appUser );
 
         return "Command canceled!";
@@ -279,7 +284,8 @@ public class DefaultMainService implements MainService {
                     .firstName( telegramUser.getFirstName() )
                     .lastName( telegramUser.getLastName() )
                     .isActive( false )
-                    .state( UserState.WAIT_FOR_EMAIL_STATE )
+                    .state( UserState.DEMO_STATE)
+                    .userActiveProcess(UserActiveProcess.NONE)
                     .build();
 
             return appUserDAO.save( transientUser );
