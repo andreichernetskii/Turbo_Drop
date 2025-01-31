@@ -11,4 +11,6 @@ public interface ConsumerService {
     void consumeDocMessageUpdate( List<Update> updates );
 
     void consumePhotoMessageUpdate( List<Update> updates );
+
+    void consumeMailConfirmedMessage(String encryptedUserId);
 }

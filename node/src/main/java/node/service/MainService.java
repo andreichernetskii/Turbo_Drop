@@ -11,4 +11,6 @@ public interface MainService {
     void processDocMessage( List<Update> updates );
 
     void processPhotoMessage( List<Update> updates );
+
+    void activateUser(String encryptedUserId);
 }

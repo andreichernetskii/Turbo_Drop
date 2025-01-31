@@ -17,6 +17,7 @@ import node.service.MainService;
 import node.service.ProducerService;
 import node.service.enums.LinkType;
 import node.service.enums.ServiceCommands;
+import node.utils.Decoder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -161,6 +162,12 @@ public class DefaultMainService implements MainService {
                 sendAnswer( error, chatId );
             }
         }
+    }
+
+    @Async
+    @Override
+    public void activateUser(String encryptedUserId) {
+        appUserService.activateUser(encryptedUserId);
     }
 
     /**

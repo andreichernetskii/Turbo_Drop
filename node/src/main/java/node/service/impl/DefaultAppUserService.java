@@ -3,11 +3,12 @@ package node.service.impl;
 import common.dao.AppUserDAO;
 import common.entity.AppUser;
 import common.entity.enums.UserActiveProcess;
-import common.entity.enums.UserState;
 import common.dto.MailParams;
+import common.entity.enums.UserState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import node.service.AppUserService;
+import node.utils.Decoder;
 import org.hashids.Hashids;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,8 @@ public class DefaultAppUserService implements AppUserService {
     private final AppUserDAO appUserDAO;
 
     private final Hashids hashids;
+
+    private final Decoder decoder;
 
     @Value( "${spring.rabbitmq.queues.registration-mail}" )
     private String registrationMailQueue;
@@ -92,6 +95,23 @@ public class DefaultAppUserService implements AppUserService {
         } else {
             return "This email is already in use." +
                     "Please enter the correct email address. For cancel operation enter /cancel command.";
+        }
+    }
+
+    @Override
+    public void activateUser(String encryptedUserId) {
+
+        Long userId = decoder.idOf(encryptedUserId);
+
+        Optional<AppUser> optionalAppUser = appUserDAO.findById(userId);
+
+        if (optionalAppUser.isPresent()) {
+            AppUser appUser = optionalAppUser.get();
+            appUser.setUserActiveProcess(UserActiveProcess.NONE);
+            appUser.setIsActive(true);
+            appUser.setState(UserState.BASIC_STATE);
+
+            appUserDAO.save(appUser);
         }
     }
 
